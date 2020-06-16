@@ -1,5 +1,8 @@
 require(ncdf4)
 
+# Paths
+landseamask_file <- "/project2/ggcmi/AgMIP.input/phase3/ISIMIP3/landseamask/landseamask_no_antarctica.nc"
+
 # get GGCM folder name passed as argument to script call
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args)==0) {
@@ -223,7 +226,7 @@ test.file <- function(fn){
 fname.issues <- list()
 data.issues <- list()
 
-landseamask <- readmask.nc("/project2/ggcmi/AgMIP.input/phase3/ISIMIP3/landseamask/landseamask_no_antarctica.nc")
+landseamask <- readmask.nc(landseamask_file)
 
 setwd(paste0("/project2/ggcmi/AgMIP.output/",args[1],"/phase3b"))
 
