@@ -8,7 +8,7 @@ if (length(args)==0) {
 
 # settings and definitions ####
 crops <- c("mai","ri1","ri2","soy","swh","wwh","bar","rye","mil","sor","soy","sun","pot","cas","sgc","sgb","nut","cot","rap","bea","pea","mgr")
-irrigs <- c("firr","nofir")
+irrigs <- c("firr","noirr")
 rcsps <- c("picontrol","historical","ssp126","ssp585")
 socs <- c("2015soc")
 sens <- c("default","2015co2")
