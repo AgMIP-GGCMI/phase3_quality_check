@@ -25,9 +25,6 @@ ranges <- list("yield"=c(0,100),"biom"=c(0,100),"cnyield"=c(0,100),"plantday"=c(
               "pirrww"=c(0,1e6),"aet"=c(0,1e6),"soilmoist1m"=c(0,1e6),"transp"=c(0,1e6),
               "evap"=c(0,1e6),"runoff"=c(0,1e6),"rootm"=c(0,100),"tnrup"=c(0,1e4),"tnrin"=c(0,1e4),"tnrloss"=c(0,1e4),"n2oemis"=c(0,1e4),"n2emis"=c(0,1e4),
               "nleach"=c(0,1e4),"tcemis"=c(0,1e4),"ch4emis"=c(0,1e4))
-units <- c("t ha-1 gs-1 (dry matter)","t ha-1 gs-1 (dry matter)","","day of year","calendar year","days from planting","days from planting","kg m-2 gs-1",
-           "kg m-2 gs-1","kg m-3","kg m-2 gs-1","kg m-2 gs-1","t ha-1 gs-1 (dry matter)","kg ha-1 gs-1","kgN ha-1 gs-1","kgN ha-1 gs-1","kgN ha-1 gs-1",
-           "gN m-2 gs-1","gN m-2 gs-1","gN m-2 gs-1","gC m-2 gs-1","gC m-2 gs-1")
 
 # Source functions
 source(ggcmi_function_file)

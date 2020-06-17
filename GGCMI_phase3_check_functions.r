@@ -12,6 +12,34 @@ readmask.nc <- function(filename,lo="lon",la="lat"){
   list(mask=mask,lon=lon,lat=lat)
 }
 
+target_units <- function(var_in) {
+  if (var_in == "plantyear") {
+    units <- "calendar year"
+  } else if (var_in == "plantday") {
+    units <- "day of year"
+  } else if (is.element(var_in, c("anthday", "matyday"))) {
+    units <- "days from planting"
+  } else if (is.element(var_in, c("tcemis", "ch4emis", "n2oemis", "n2emis", "nleach"))) {
+    units <- "gC m-2 gs-1"
+  } else if (var_in == "rootm") {
+    units <- "kg ha-1 gs-1"
+  } else if (is.element(var_in, c("pirrww", "aet", "transp", "evap"))) {
+    units <- "kg m-2 gs-1"
+  } else if (var_in == "soilmoist1m") {
+    units <- "kg m-3"
+  } else if (is.element(var_in, c("tnrup", "tnrin", "tnrloss"))) {
+    units <- "kgN ha-1 gs-1"
+  } else if (is.element(var_in, c("yield", "biom", "runoff"))) {
+    units <- "t ha-1 gs-1 (dry matter)"
+  } else if (var_in == "cnyield") {
+      units <- ""
+  } else {
+    stop(paste(var_in, "not recognized when trying to get units"))
+  }
+    
+  return(units)
+}
+
 test.filename <- function(fn){
   # <modelname>_<climate_forcing>_<bias_adjustment>_<climate_scenario>_<soc_scenario>_<sens_scenario>_<variable>-<crop>-<irrigation>_<region>_<timestep>_<start_year>_<end_year>.nc
   ending.f <- mname.f <- climate.f <- bias.f <- scen.f <- soc.f <- sens.f <- var.f <- crop.f <- irrig.f <- region.f <- timestep.f <- 
@@ -111,8 +139,8 @@ test.file <- function(fn){
       var.f <- paste("  => ERROR: variable uncorrectly named",var,"instead of",paste0(bits2[1],"_",bits2[2],".\n"))
       errors <- errors + 1
     }
-    if(nc$var[[1]]$units!=units[index]){
-      units.f <- paste(units.f,"  => ERROR: variable units incorrectly defined",nc$var[[1]]$units,"instead of '",units[index],"'\n")
+    if(nc$var[[1]]$units!=target_units(var)){
+      units.f <- paste(units.f,"  => ERROR: variable units incorrectly defined",nc$var[[1]]$units,"instead of '",target_units(var),"'\n")
       errors <- errors + 1
     }
     if(nc$var[[1]]$missval!=1e20){
