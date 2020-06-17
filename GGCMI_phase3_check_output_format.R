@@ -6,7 +6,7 @@ landseamask_file <- "/project2/ggcmi/AgMIP.input/phase3/ISIMIP3/landseamask/land
 # get GGCM folder name passed as argument to script call
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args)==0) {
-  stop("GGCM folder name must be supplied (input file).n", call.=FALSE)
+  stop("GGCM folder name must be supplied (input file).", call.=FALSE)
 }
 
 # settings and definitions ####
