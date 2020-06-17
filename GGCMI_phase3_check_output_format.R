@@ -109,7 +109,7 @@ for(fn in 1:length(files)){
                                                 if(!is.null(test$region.f))test$region.f,if(!is.null(test$timestep.f))test$timestep.f,
                                                 if(!is.null(test$starty.f))test$starty.f,if(!is.null(test$endy.f))test$endy.f)
   if(length(collected)>0)
-    fname.issues[length(fname.issues)+1] <- paste0("file naming issues (",test$warnings," warngings; ",test$errors," errors) with ",files[fn],"\n",collected)
+    fname.issues[length(fname.issues)+1] <- paste0("file naming issues (",test$warnings," warnings; ",test$errors," errors) with ",files[fn],"\n",collected)
 }
 if(length(fname.issues)>0){
   cat(length(fname.issues),"file names issues in ",length(files)," files, with ",warnings,"Warnings and ",errors,"errors.\n\n")
@@ -138,7 +138,7 @@ cat(date,"\n\n")
 if(length(fname.issues)>0){
   cat(unlist(fname.issues),sep="\n")
 } else {
-  cat("no file nameing issues detected.\n")
+  cat("no file naming issues detected.\n")
 }
 sink()
 
