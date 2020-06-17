@@ -1,10 +1,10 @@
 require(ncdf4)
 
 # Paths
-landseamask_file <- "/project2/ggcmi/AgMIP.input/phase3/ISIMIP3/landseamask/landseamask_no_antarctica.nc"
-report_dir <- "/home/chmueller/public_html/" # Set to "" to use working directory (top-level directory of outputs)
-report_dir_web <- "https://users.rcc.uchicago.edu/~chmueller/" # Set to "" to ignore
-ggcmi_function_file <- "./GGCMI_phase3_check_functions.r"
+landseamask_file <- "/Volumes/Reacher/GGCMI/inputs/phase3/ISIMIP3/landseamask/landseamask_no_antarctica.nc"
+report_dir <- "" # Set to "" to use working directory (top-level directory of outputs)
+report_dir_web <- "" # Set to "" to ignore
+ggcmi_function_file <- "/Users/Shared/GGCMI/inputs/phase3/ISIMIP3/_MATLAB_ISIMIP3/phase3_quality_check/GGCMI_phase3_check_functions.r"
 
 # get GGCM folder name passed as argument to script call
 args <- commandArgs(trailingOnly = TRUE)
@@ -13,7 +13,7 @@ if (length(args)==0) {
 }
 
 # settings and definitions ####
-crops <- c("mai","ri1","ri2","soy","swh","wwh","bar","rye","mil","sor","soy","sun","pot","cas","sgc","sgb","nut","cot","rap","bea","pea","mgr")
+crops <- c("mai","ri1","ri2","soy","swh","wwh","mil","sor","bea")
 irrigs <- c("firr","noirr")
 rcsps <- c("picontrol","historical","ssp126","ssp585")
 socs <- c("2015soc")
