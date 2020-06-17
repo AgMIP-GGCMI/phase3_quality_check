@@ -1,3 +1,8 @@
+ranges <- list("yield"=c(0,100),"biom"=c(0,100),"cnyield"=c(0,100),"plantday"=c(0,365),"plantyear"=c(1850,2100),"anthday"=c(0,365),"matyday"=c(0,365),
+              "pirrww"=c(0,1e6),"aet"=c(0,1e6),"soilmoist1m"=c(0,1e6),"transp"=c(0,1e6),
+              "evap"=c(0,1e6),"runoff"=c(0,1e6),"rootm"=c(0,100),"tnrup"=c(0,1e4),"tnrin"=c(0,1e4),"tnrloss"=c(0,1e4),"n2oemis"=c(0,1e4),"n2emis"=c(0,1e4),
+              "nleach"=c(0,1e4),"tcemis"=c(0,1e4),"ch4emis"=c(0,1e4))
+              
 readmask.nc <- function(filename,lo="lon",la="lat"){
   nc <- nc_open(filename)
   var <- names(nc$var)[1]
