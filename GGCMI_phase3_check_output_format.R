@@ -53,7 +53,7 @@ if (report_dir_web != "") {
 
 sink(file=reportname,append=F)
 #outfile <- file(reportname,"wt")
-files <- dir()
+files <- dir(recursive=TRUE, include.dirs=FALSE)
 date <- date()
 cat("********  GGCMI Phase 3 file check summary report ********\n\n")
 cat(date,"\n\n")
