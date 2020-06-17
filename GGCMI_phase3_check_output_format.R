@@ -2,6 +2,8 @@ require(ncdf4)
 
 # Paths
 landseamask_file <- "/project2/ggcmi/AgMIP.input/phase3/ISIMIP3/landseamask/landseamask_no_antarctica.nc"
+report_dir <- "/home/chmueller/public_html/"
+report_dir_web <- "https://users.rcc.uchicago.edu/~chmueller/"
 
 # get GGCM folder name passed as argument to script call
 args <- commandArgs(trailingOnly = TRUE)
@@ -228,17 +230,27 @@ data.issues <- list()
 
 landseamask <- readmask.nc(landseamask_file)
 
-setwd(paste0("/project2/ggcmi/AgMIP.output/",args[1],"/phase3b"))
+# Get and change working directory
+working_dir <- paste0("/project2/ggcmi/AgMIP.output/",args[1],"/phase3b")
+setwd(working_dir)
+
+# If report_dir not specified, set it to working_dir
+if report_dir == "" {
+    report_dir = paste0(working_dir, "/")
+}
 
 # delete old reports
-unlink(paste0("/home/chmueller/public_html/",args[1],"*"))
-reportname <- paste0("/home/chmueller/public_html/",args[1],"_summary.txt")
-fn.reportname <- paste0("/home/chmueller/public_html/",args[1],"_filename_issues.txt")
-fn.reportname2 <- paste0("https://users.rcc.uchicago.edu/~chmueller/",args[1],"_filename_issues.txt")
-sim.reportname <- paste0("/home/chmueller/public_html/",args[1],"_simulations_missing.txt")
-sim.reportname2 <- paste0("https://users.rcc.uchicago.edu/~chmueller/",args[1],"_simulations_missing.txt")
-data.reportname <- paste0("/home/chmueller/public_html/",args[1],"_data_issues.txt")
-data.reportname2 <- paste0("https://users.rcc.uchicago.edu/~chmueller/",args[1],"_data_issues.txt")
+unlink(paste0(report_dir,args[1],"*"))
+reportname <- paste0(report_dir,args[1],"_summary.txt")
+fn.reportname <- paste0(report_dir,args[1],"_filename_issues.txt")
+sim.reportname <- paste0(report_dir,args[1],"_simulations_missing.txt")
+data.reportname <- paste0(report_dir,args[1],"_data_issues.txt")
+if report_dir_web != "" {
+    fn.reportname2 <- paste0(report_dir_web,args[1],"_filename_issues.txt")
+    sim.reportname2 <- paste0(report_dir_web,args[1],"_simulations_missing.txt")
+    data.reportname2 <- paste0(report_dir_web,args[1],"_data_issues.txt")
+}
+
 sink(file=reportname,append=F)
 #outfile <- file(reportname,"wt")
 files <- dir()
@@ -246,9 +258,15 @@ date <- date()
 cat("********  GGCMI Phase 3 file check summary report ********\n\n")
 cat(date,"\n\n")
 cat("there are more detailed reports for specific aspects:\n")
-cat(fn.reportname2,"\n")
-cat(sim.reportname2,"\n")
-cat(data.reportname2,"\n")
+if report_dir_web != "" {
+    cat(fn.reportname2,"\n")
+    cat(sim.reportname2,"\n")
+    cat(data.reportname2,"\n")
+} else {
+    cat(fn.reportname,"\n")
+    cat(sim.reportname,"\n")
+    cat(data.reportname,"\n")
+}
 
 cat("/*=============================================================================================*/\n")
 cat("/*===================      FILE NAMING ISSUES     =============================================*/\n")
