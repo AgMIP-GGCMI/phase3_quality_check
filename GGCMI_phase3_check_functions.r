@@ -229,9 +229,13 @@ test.file <- function(fn, landseamask){
       errors <- errors + 1
     }
     if(nc$var[[1]]$missval!=1e20){
-      browser()
-      range.f <- paste(range.f,"  => ERROR: variable missval incorrectly defined",nc$var[[1]]$missval,"instead of '1e20'\n")
-      errors <- errors + 1
+      if (abs(nc$var[[1]]$missval*1e-20 - 1) < 1e-6) {
+        range.f <- paste0(range.f,"   => WARNING: R reads missing value as '",nc$var[[1]]$missval,"' instead of '1e20'.\n")
+        warnings <- warnings + 1
+      } else {
+        range.f <- paste0(range.f,"   => ERROR: missing value incorrectly defined as '",nc$var[[1]]$missval,"' instead of '1e20'\n")
+        errors <- errors + 1
+      }
     }
     
     #=#=#=#=#=#=#=#=#=#=#=#=#=#=
@@ -305,8 +309,7 @@ test.file <- function(fn, landseamask){
         errors <- errors + 1
       }
     }
-    browser()
-    
+
     #=#=#=#=#=#=#=#=#=#=#=#=#=#=
     # Check variable data
     #=#=#=#=#=#=#=#=#=#=#=#=#=#=
