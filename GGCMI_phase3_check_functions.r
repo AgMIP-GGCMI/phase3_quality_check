@@ -202,7 +202,7 @@ test.filename <- function(file_path, model.name, ignore){
 }
 
 test.file <- function(fn, landseamask){
-  var.f <- ndim.f <- dimname.f <- dimdef.f <- units.f <- range.f <- cover.f <- NULL  
+  var.f <- ndim.f <- dimname.f <- dimdef.f <- units.f <- range.f <- cover.f <- timespan.f <- NULL  
   warnings <- errors <- 0
 
   bits <- unlist(strsplit(fn,"[.]"))
@@ -224,7 +224,7 @@ test.file <- function(fn, landseamask){
       errors <- errors + 1
     }
     if(nc$var[[1]]$units!=target_units(var)){
-      browser()
+      # browser()
       units.f <- paste(units.f,"  => ERROR: variable units incorrectly defined",nc$var[[1]]$units,"instead of '",target_units(var),"'\n")
       errors <- errors + 1
     }
@@ -309,6 +309,23 @@ test.file <- function(fn, landseamask){
         errors <- errors + 1
       }
     }
+    fn_years <- tail(unlist(strsplit(unlist(strsplit(basename(fn), ".", fixed=TRUE))[1], "_")), 2)
+    if (!identical(c(1,2), as.numeric(grep("[0-9][0-9][0-9][0-9]", fn_years)))) {
+      timespan.f <- paste0(timespan.f,"  => ERROR: unable to parse time span from filename for checking size of time dimension\n")
+      errors <- errors + 1
+    } else {
+      y1 <- as.numeric(fn_years[1])
+      yN <- as.numeric(fn_years[2])
+      Ntimesteps_target <- yN - y1 + 1
+      if (unlist(strsplit(var, "-"))[1] == "soilmoist1m") {
+        Ntimesteps_target = Ntimesteps_target * 12
+      }
+      Ntimesteps <- dim(ncvar_get(nc,"time"))
+      if (Ntimesteps != Ntimesteps_target) {
+        timespan.f <- paste0(timespan.f,"  => ERROR: time dimension has size ", Ntimesteps, " instead of ", Ntimesteps_target, " expected based on filename\n")
+        errors <- errors + 1
+      }
+    }
 
     #=#=#=#=#=#=#=#=#=#=#=#=#=#=
     # Check variable data
@@ -344,12 +361,13 @@ test.file <- function(fn, landseamask){
       warnings <- warnings + 1
     }
     
-    
   } else {
     var.f <- paste("  => ERROR: Variable",bits2[1],"unknown\n")
     errors <- errors + 1
   }
-  list(var.f=var.f,ndim.f=ndim.f,dimname.f=dimname.f,dimdef.f=dimdef.f,units.f=units.f,range.f=range.f,cover.f=cover.f,warnings=warnings,errors=errors)
+
+  list(var.f=var.f, ndim.f=ndim.f, dimname.f=dimname.f, dimdef.f=dimdef.f, units.f=units.f,
+       range.f=range.f, cover.f=cover.f, timespan.f=timespan.f, warnings=warnings, errors=errors)
 }
 
 
@@ -620,10 +638,10 @@ do_test.files <- function(files, data.reportname, landseamask, save2file, thisda
   cat("/*===================      DATA RANGE and COVERAGE ISSUES      ================================*/\n")
   cat("/*=============================================================================================*/\n")
   warnings <- errors <- 0
-  error.types <- list("variable isssues"=NULL,"number of dimensions"=NULL,"dimension names"=NULL,
-                      "dimension definitions"=NULL,"units"=NULL,"data ranges"=NULL,
-                      "data coverage"=NULL)
-  for(fn in 1:1){
+  error.types <- list("variable isssues"=NULL, "number of dimensions"=NULL, "dimension names"=NULL,
+                      "dimension definitions"=NULL, "units"=NULL, "data ranges"=NULL,
+                      "data coverage"=NULL, "time span"=NULL)
+  for(fn in 1:length(files)){
     cat("Reading", fn, "of", length(files), "(", files[fn], ")\n")
     test <- test.file(files[fn], landseamask)
     warnings <- warnings + test$warnings
@@ -634,10 +652,15 @@ do_test.files <- function(files, data.reportname, landseamask, save2file, thisda
     if(!is.null(test$units.f)) error.types[[4]] <- c(error.types[[4]],fn)
     if(!is.null(test$range.f)) error.types[[5]] <- c(error.types[[5]],fn)
     if(!is.null(test$cover.f)) error.types[[6]] <- c(error.types[[6]],fn)
+    if(!is.null(test$timespan.f)) error.types[[7]] <- c(error.types[[7]],fn)
     
-    collected <- paste0(if(!is.null(test$var.f))test$var.f,if(!is.null(test$ndim.f))test$ndim.f,
-                        if(!is.null(test$dimname.f))test$dimname.f,if(!is.null(test$units.f))test$units.f,
-                        if(!is.null(test$range.f))test$range.f,if(!is.null(test$cover.f))test$cover.f)
+    collected <- paste0(if(!is.null(test$var.f))test$var.f,
+                        if(!is.null(test$ndim.f))test$ndim.f,
+                        if(!is.null(test$dimname.f))test$dimname.f,
+                        if(!is.null(test$units.f))test$units.f,
+                        if(!is.null(test$range.f))test$range.f,
+                        if(!is.null(test$cover.f))test$cover.f,
+                        if(!is.null(test$timespan.f))test$timespan.f)
     if(length(collected)>0)
       data.issues[length(data.issues)+1] <- paste0("data range and coverage issues (",test$warnings," warngings; ",test$errors," errors) with ",files[fn],"\n",collected)
   }
