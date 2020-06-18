@@ -1,5 +1,7 @@
 require(ncdf4)
 
+save2file <- FALSE
+
 # Paths
 # path_AgMIP.output <- "/project2/ggcmi/AgMIP.output/"
 path_AgMIP.output <- "/Volumes/Reacher/GGCMI/runs_ggcmi_3b/tests/test_shortspinup/output-2020-06-15-202043-pp"
@@ -47,24 +49,24 @@ setwd(working_dir)
 landseamask <- readmask.nc(landseamask_file)
 
 # Set up reports
-reportnames <- setup_reports(report_dir, report_dir_web)
+reportnames <- setup_reports(report_dir, report_dir_web, save2file)
 
 
 #######################
 # Test filenames
 #######################
 files <- dir(recursive=TRUE, include.dirs=FALSE)
-model.name <- do_test.filenames(files, reportnames$fn)
+model.name <- do_test.filenames(files, reportnames$fn, save2file)
 
 
 ##############################################
 # Test that all expected files exist
 ##############################################
-do_test.file_set(crops, irrigs, rcsps, socs, sens, gcms, vars, reportnames$sim)
+do_test.file_set(crops, irrigs, rcsps, socs, sens, gcms, vars, reportnames$sim, save2file)
 
 
 ##############################################
 # Test file contents
 ##############################################
-do_test.files(files, reportnames$data, landseamask)
+do_test.files(files, reportnames$data, landseamask, save2file)
 

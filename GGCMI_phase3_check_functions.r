@@ -228,7 +228,7 @@ test.file <- function(fn, landseamask){
 }
 
 
-setup_reports <- function(report_dir, report_dir_web) {
+setup_reports <- function(report_dir, report_dir_web, save2file) {
   
   # If report_dir not specified, set it to working_dir
   if (report_dir == "") {
@@ -248,7 +248,7 @@ setup_reports <- function(report_dir, report_dir_web) {
     data.reportname2 <- paste0(report_dir_web,args[1],"_data_issues.txt")
   }
   
-  sink(file=reportname,append=F)
+  if (save2file) sink(file=reportname,append=F)
   #outfile <- file(reportname,"wt")
   
   date <- date()
@@ -269,7 +269,7 @@ setup_reports <- function(report_dir, report_dir_web) {
 }
 
 
-do_test.filenames <- function(files, fn.reportname) {
+do_test.filenames <- function(files, fn.reportname, save2file) {
   
   fname.issues <- list()
   
@@ -328,9 +328,9 @@ do_test.filenames <- function(files, fn.reportname) {
   }
   
   # stop reporting
-  sink()
+  if (save2file) sink()
   
-  sink(file=fn.reportname,append=F)
+  if (save2file) sink(file=fn.reportname,append=F)
   cat("********  GGCMI Phase 3 file check report ********\n\n")
   cat(date,"\n\n")
   if(length(fname.issues)>0){
@@ -338,7 +338,7 @@ do_test.filenames <- function(files, fn.reportname) {
   } else {
     cat("no file naming issues detected.\n")
   }
-  sink()
+  if (save2file) sink()
   
   # store model name for later
   bits <- unlist(strsplit(files[1],"[.]"))
@@ -349,7 +349,7 @@ do_test.filenames <- function(files, fn.reportname) {
 }
 
 
-do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sims.reportname) {
+do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sims.reportname, save2file) {
   
   # testing as all file names are wrong
   sens <- c(sens,"transco2")
@@ -378,7 +378,7 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sims.
     }
   }
   
-  sink(file=sim.reportname,append=T)
+  if (save2file) sink(file=sim.reportname,append=T)
   cat("\n\n\n/*=============================================================================================*/\n")
   cat("/*===================      MISSING OUTPUTS        =============================================*/\n")
   cat("/*=============================================================================================*/\n")
@@ -452,25 +452,25 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sims.
     
     if(!all(sims2==1)){
       cat("incomplete sets:",length(sims2[sims2!=1]),"of",length(sims2),"see",sim.reportname,"for details.\n")
-      sink()
-      sink(file=sim.reportname,append=F)
+      if (save2file) sink()
+      if (save2file) sink(file=sim.reportname,append=F)
       cat("incomplete sets:\n")
       sims2[sims2!=1] <- "miss"
       sims2[sims2==1] <- "OK"
       print(sims2)
-      sink()
+      if (save2file) sink()
       
     }
     #c(1:length(crops))[-mcrops]
   } else {
     cat("\nno issues detected\n\n")
   }
-  sink()
+  if (save2file) sink()
   
 }
 
 
-do_test.files <- function(files, data.reportname, landseamask) {
+do_test.files <- function(files, data.reportname, landseamask, save2file) {
   
   data.issues <- list()
   
@@ -517,9 +517,9 @@ do_test.files <- function(files, data.reportname, landseamask) {
   }
   
   # stop reporting
-  sink()
+  if (save2file) sink()
   
-  sink(file=data.reportname,append=F)
+  if (save2file) sink(file=data.reportname,append=F)
   cat("********  GGCMI Phase 3 data range and coverage check report ********\n\n")
   cat(date,"\n\n")
   if(length(data.issues)>0){
@@ -527,7 +527,7 @@ do_test.files <- function(files, data.reportname, landseamask) {
   } else {
     cat("no data range and coverage issues detected.\n")
   }
-  sink()
+  if (save2file) sink()
 }
 
 
