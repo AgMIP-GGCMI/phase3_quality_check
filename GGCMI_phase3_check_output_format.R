@@ -11,7 +11,7 @@ report_dir_web <- "" # Set to "" to ignore
 ggcmi_function_file <- "/Users/Shared/GGCMI/inputs/phase3/ISIMIP3/_MATLAB_ISIMIP3/phase3_quality_check/GGCMI_phase3_check_functions.r"
 
 # settings and definitions ####
-model.name.orig <- "lpj-guess"
+model.name <- "lpj-guess"
 crops <- c("mai","ri1","ri2","soy","swh","wwh","mil","sor","bea")
 irrigs <- c("firr","noirr")
 rcsps <- c("picontrol","historical","ssp126","ssp585")
@@ -28,19 +28,12 @@ vars <- c("yield","biom","cnyield","plantday","plantyear","anthday","matyday","p
 source(ggcmi_function_file)
 thisdate <- date()
 
-# get GGCM folder name passed as argument to script call
-args <- commandArgs(trailingOnly = TRUE)
-if (length(args)==0) {
-  # stop("GGCM folder name must be supplied (input file).", call.=FALSE)
-  args = c(model.name.orig)
-}
-
 # Get and change working directory,
 # ensuring that the last character of path_AgMIP.output is /
 if (substr(path_AgMIP.output, nchar(path_AgMIP.output), nchar(path_AgMIP.output)) != "/") {
   path_AgMIP.output <- paste0(path_AgMIP.output, "/")
 }
-working_dir <- paste0(path_AgMIP.output,args[1],"/phase3b")
+working_dir <- paste0(path_AgMIP.output,model.name,"/phase3b")
 if (!dir.exists(working_dir)) {
   stop(paste("working_dir does not exist:", working_dir))
 }
@@ -50,14 +43,14 @@ setwd(working_dir)
 landseamask <- readmask.nc(landseamask_file)
 
 # Set up reports
-reportnames <- setup_reports(report_dir, report_dir_web, save2file, thisdate)
+reportnames <- setup_reports(report_dir, report_dir_web, save2file, thisdate, model.name)
 
 
 #######################
 # Test filenames
 #######################
 files <- dir(recursive=TRUE, include.dirs=FALSE)
-model.name <- do_test.filenames(files, reportnames$fn, save2file, thisdate)
+do_test.filenames(files, reportnames$fn, save2file, thisdate, model.name)
 
 
 ##############################################

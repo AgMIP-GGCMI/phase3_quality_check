@@ -45,11 +45,15 @@ target_units <- function(var_in) {
   return(units)
 }
 
-test.filename <- function(fn){
+test.filename <- function(file_path, model.name){
   # <modelname>_<climate_forcing>_<bias_adjustment>_<climate_scenario>_<soc_scenario>_<sens_scenario>_<variable>-<crop>-<irrigation>_<region>_<timestep>_<start_year>_<end_year>.nc
   ending.f <- mname.f <- climate.f <- bias.f <- scen.f <- soc.f <- sens.f <- var.f <- crop.f <- irrig.f <- region.f <- timestep.f <- 
     starty.f <- endy.f <- NULL
   warnings <- errors <- 0
+  
+  # Get filename
+  fn <- basename(file_path)
+  
   # split up file name into elements
   # remove .nc parg
   bits <- unlist(strsplit(fn,"[.]"))
@@ -60,62 +64,76 @@ test.filename <- function(fn){
   }
   # split rest of file name string into elements
   bits <- unlist(strsplit(bits[1],"_"))
-  if(bits[1]!=tolower(args[1])){
-    mname.f <- paste("  => WARNING: model name",bits[1],"not the same as folder name",args[1],"\n")
+  if(bits[1]!=tolower(model.name)){
+    browser()
+    mname.f <- paste("  => WARNING: model name",bits[1],"not the same as folder name",model.name,"\n")
     warnings <- warnings + 1
   }
   if(!(bits[2]%in%tolower(gcms))){
+    browser()
     climate.f <- paste("  => ERROR: climate",bits[2],"not in set of GCMs\n")
     errors <- errors + 1
   }
   if(bits[3]!="w5e5"){
+    browser()
     bias.f <- paste("  => ERROR: bias_adjustment string",bits[3],"not 'w5e5'\n")
     errors <- errors + 1 
   }
   if(!(bits[4]%in%rcsps)){
+    browser()
     soc.f <- paste("  => ERROR: SSP/RCP scenario",bits[4],"not in set of scenarios",rcsps,"\n")
     errors <- errors + 1
   }
   if(!(bits[5]%in%tolower(socs))){
+    browser()
     soc.f <- paste("  => ERROR: soc scenario",bits[5],"not in set of soc scenarios\n")
     errors <- errors + 1
   }
   if(!(bits[6]%in%tolower(sens))){
+    browser()
     sens.f <- paste("  => ERROR: sens scenario",bits[6],"not in set of soc scenarios\n")
     errors <- errors + 1
   }
   bits2 <- unlist(strsplit(bits[7],"-"))
   if(length(bits2)!=3){
+    browser()
     var.f <- paste("  => ERROR: wrong number of elements in variable string:",bits[7],"\n")
     errors <- errors + 1
   }
   else{
     if(!(bits2[1]%in%vars)){
+      browser()
       var.f <- paste("  => ERROR: variable",bits2[1],"not in set of variables\n")
       errors <- errors + 1
     }
     if(!(bits2[2]%in%crops)){
+      browser()
       crops.f <- paste("  => WARNING: variable",bits2[2],"not in set of crops\n")
       warnings <- warnings + 1
     }
     if(!(bits2[3]%in%irrigs)){
+      browser()
       irrig.f <- paste("  => WARNING: variable",bits2[2],"not in set of crops\n")
       warnings <- warnings + 1
     }
   }
   if(!(bits[8]=="global")){
+    browser()
     region.f <- paste("  => ERROR: region",bits[8],"not 'global'\n")
     errors <- errors + 1
   }
   if(!(bits[9]=="annual")){
+    browser()
     timestep.f <- paste("  => ERROR: timestep",bits[9],"not 'annual'\n")
     errors <- errors + 1
   }
   if(!((bits[4]%in%rcsps[c(1,2)] & bits[10]==1850) | (bits[4]%in%rcsps[-c(1,2)] & bits[10]==2015))){
+    browser()
     starty.f <- paste("  => ERROR: startyear",bits[10],"not compatible with scenario",bits[4],"\n")
     errors <- errors + 1
   }
   if(!((bits[4]==rcsps[2] & bits[11]==2014) | (bits[4]%in%rcsps[-2] & bits[11]==2100))){
+    browser()
     endy.f <- paste("  => ERROR: endyear",bits[11],"not compatible with scenario",bits[4],"\n")
     errors <- errors + 1
   }
@@ -228,7 +246,7 @@ test.file <- function(fn, landseamask){
 }
 
 
-setup_reports <- function(report_dir, report_dir_web, save2file, thisdate) {
+setup_reports <- function(report_dir, report_dir_web, save2file, thisdate, model.name) {
   
   # If report_dir not specified, set it to working_dir
   if (report_dir == "") {
@@ -236,16 +254,16 @@ setup_reports <- function(report_dir, report_dir_web, save2file, thisdate) {
   }
   
   # delete old reports
-  unlink(paste0(report_dir,args[1],"*"))
-  reportname <- paste0(report_dir,args[1],"_summary.txt")
-  fn.reportname <- paste0(report_dir,args[1],"_filename_issues.txt")
-  sim.reportname <- paste0(report_dir,args[1],"_simulations_missing.txt")
-  data.reportname <- paste0(report_dir,args[1],"_data_issues.txt")
+  unlink(paste0(report_dir,model.name,"*"))
+  reportname <- paste0(report_dir,model.name,"_summary.txt")
+  fn.reportname <- paste0(report_dir,model.name,"_filename_issues.txt")
+  sim.reportname <- paste0(report_dir,model.name,"_simulations_missing.txt")
+  data.reportname <- paste0(report_dir,model.name,"_data_issues.txt")
   reportnames <- list("fn"=fn.reportname, "sim"=sim.reportname, "data"=data.reportname)
   if (report_dir_web != "") {
-    fn.reportname2 <- paste0(report_dir_web,args[1],"_filename_issues.txt")
-    sim.reportname2 <- paste0(report_dir_web,args[1],"_simulations_missing.txt")
-    data.reportname2 <- paste0(report_dir_web,args[1],"_data_issues.txt")
+    fn.reportname2 <- paste0(report_dir_web,model.name,"_filename_issues.txt")
+    sim.reportname2 <- paste0(report_dir_web,model.name,"_simulations_missing.txt")
+    data.reportname2 <- paste0(report_dir_web,model.name,"_data_issues.txt")
   }
   
   if (save2file) sink(file=reportname,append=F)
@@ -268,7 +286,7 @@ setup_reports <- function(report_dir, report_dir_web, save2file, thisdate) {
 }
 
 
-do_test.filenames <- function(files, fn.reportname, save2file, thisdate) {
+do_test.filenames <- function(files, fn.reportname, save2file, thisdate, model.name) {
   
   fname.issues <- list()
   
@@ -280,8 +298,8 @@ do_test.filenames <- function(files, fn.reportname, save2file, thisdate) {
                       "unknown scenario"=NULL,"unknown soc setting"=NULL,"unknown sensitivty setting"=NULL,
                       "wrong variable"=NULL,"unknown crop"=NULL,"wrong irrigation setting"=NULL,
                       "wrong region"=NULL,"wrong time step"=NULL,"wrong start year"=NULL,"wrong end year"=NULL,"wrong bias adjustment"=NULL)
-  for(fn in 1:length(files)){
-    test <- test.filename(files[fn])
+  for(fn in 1:1){
+    test <- test.filename(files[fn], model.name)
     warnings <- warnings + test$warnings
     errors <- errors + test$errors
     if(!is.null(test$ending.f)) error.types[[1]] <- c(error.types[[1]],fn)
@@ -338,13 +356,8 @@ do_test.filenames <- function(files, fn.reportname, save2file, thisdate) {
     cat("no file naming issues detected.\n")
   }
   if (save2file) sink()
-  
-  # store model name for later
-  bits <- unlist(strsplit(files[1],"[.]"))
-  bits <- unlist(strsplit(bits[1],"_"))
-  model.name <- bits[1]
-  
-  model.name
+
+  stop()
 }
 
 
