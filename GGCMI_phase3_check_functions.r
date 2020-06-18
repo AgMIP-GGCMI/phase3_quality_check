@@ -59,7 +59,7 @@ test.filename <- function(file_path, model.name){
   bits <- unlist(strsplit(fn,"[.]"))
   ending <- bits[2]
   if(ending != "nc"){
-    ending.f <- paste("  => WARNING: File ending is no '.nc' but",ending,"\n")
+    ending.f <- paste("  => WARNING: File ending is not '.nc' but",ending,"\n")
     warnings <- warnings + 1
   }
   # split rest of file name string into elements
@@ -159,7 +159,7 @@ test.file <- function(fn, landseamask){
     }
     var <- names(nc$var)[1]
     if(var!=paste0(bits2[1],"_",bits2[2])){
-      var.f <- paste("  => ERROR: variable uncorrectly named",var,"instead of",paste0(bits2[1],"_",bits2[2],".\n"))
+      var.f <- paste("  => ERROR: variable incorrectly named",var,"instead of",paste0(bits2[1],"_",bits2[2],".\n"))
       errors <- errors + 1
     }
     if(nc$var[[1]]$units!=target_units(var)){
