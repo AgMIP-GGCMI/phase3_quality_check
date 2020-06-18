@@ -28,17 +28,17 @@ target_units <- function(varcropirr_in) {
     units <- "day of year"
   } else if (is.element(var_in, c("anthday", "matyday"))) {
     units <- "days from planting"
-  } else if (is.element(var_in, c("tcemis", "ch4emis", "n2oemis", "n2emis", "nleach"))) {
+  } else if (is.element(var_in, c("tcemis", "ch4emis"))) {
     units <- "gC m-2 gs-1"
-  } else if (var_in == "rootm") {
-    units <- "kg ha-1 gs-1"
-  } else if (is.element(var_in, c("pirrww", "aet", "transp", "evap"))) {
+  } else if (is.element(var_in, c("n2oemis", "n2emis", "nleach"))) {
+    units <- "gN m-2 gs-1"
+  } else if (is.element(var_in, c("pirrww", "aet", "transp", "evap", "runoff"))) {
     units <- "kg m-2 gs-1"
   } else if (var_in == "soilmoist1m") {
     units <- "kg m-3"
   } else if (is.element(var_in, c("tnrup", "tnrin", "tnrloss"))) {
     units <- "kgN ha-1 gs-1"
-  } else if (is.element(var_in, c("yield", "biom", "runoff"))) {
+  } else if (is.element(var_in, c("yield", "biom", "rootm"))) {
     units <- "t ha-1 gs-1 (dry matter)"
   } else if (var_in == "cnyield") {
       units <- ""
@@ -224,8 +224,7 @@ test.file <- function(fn, landseamask){
       errors <- errors + 1
     }
     if(nc$var[[1]]$units!=target_units(var)){
-      # browser()
-      units.f <- paste(units.f,"  => ERROR: variable units incorrectly defined",nc$var[[1]]$units,"instead of '",target_units(var),"'\n")
+      units.f <- paste0(units.f,"  => ERROR: variable units incorrectly defined as '",nc$var[[1]]$units,"' instead of '",target_units(var),"'\n")
       errors <- errors + 1
     }
     if(nc$var[[1]]$missval!=1e20){
