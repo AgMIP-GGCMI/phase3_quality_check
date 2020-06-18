@@ -418,9 +418,6 @@ do_test.filenames <- function(files, fn.reportname, save2file, thisdate, model.n
 
 do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sims.reportname, save2file, ignore) {
   
-  # testing as all file names are wrong
-  sens <- c(sens,"transco2")
-  
   sims <- array(NA,dim=c(length(crops),length(irrigs),length(rcsps),length(socs),length(sens),length(gcms),length(vars)))
   dimnames(sims) <- list(crops,irrigs,rcsps,socs,sens,gcms,vars)
   #<modelname>_<climate_forcing>_<bias_adjustment>_<climate_scenario>_<soc_scenario>_<sens_scenario>_<variable>-<crop>-<irrigation>_<region>_<timestep>_<start_year>_<end_year>.nc
