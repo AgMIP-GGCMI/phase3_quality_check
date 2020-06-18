@@ -1,6 +1,8 @@
 require(ncdf4)
 
 # Paths
+# path_AgMIP.output <- "/project2/ggcmi/AgMIP.output/"
+path_AgMIP.output <- "/Volumes/Reacher/GGCMI/runs_ggcmi_3b/tests/test_shortspinup/output-2020-06-15-202043-pp"
 landseamask_file <- "/Volumes/Reacher/GGCMI/inputs/phase3/ISIMIP3/landseamask/landseamask_no_antarctica.nc"
 report_dir <- "" # Set to "" to use working directory (top-level directory of outputs)
 report_dir_web <- "" # Set to "" to ignore
@@ -27,8 +29,12 @@ source(ggcmi_function_file)
 
 landseamask <- readmask.nc(landseamask_file)
 
-# Get and change working directory
-working_dir <- paste0("/project2/ggcmi/AgMIP.output/",args[1],"/phase3b")
+# Get and change working directory,
+# ensuring that the last character of path_AgMIP.output is /
+if (substr(path_AgMIP.output, nchar(path_AgMIP.output), nchar(path_AgMIP.output)) != "/") {
+  path_AgMIP.output <- paste0(path_AgMIP.output, "/")
+}
+working_dir <- paste0(path_AgMIP.output,args[1],"/phase3b")
 setwd(working_dir)
 
 
