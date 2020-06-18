@@ -38,6 +38,9 @@ if (substr(path_AgMIP.output, nchar(path_AgMIP.output), nchar(path_AgMIP.output)
   path_AgMIP.output <- paste0(path_AgMIP.output, "/")
 }
 working_dir <- paste0(path_AgMIP.output,args[1],"/phase3b")
+if (!dir.exists(working_dir)) {
+  stop(paste("working_dir does not exist:", working_dir))
+}
 setwd(working_dir)
 
 # Import landseamask
