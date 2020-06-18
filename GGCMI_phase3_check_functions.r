@@ -637,7 +637,7 @@ do_test.files <- function(files, data.reportname, landseamask, save2file, thisda
   cat("/*===================      DATA RANGE and COVERAGE ISSUES      ================================*/\n")
   cat("/*=============================================================================================*/\n")
   warnings <- errors <- 0
-  error.types <- list("variable isssues"=NULL, "number of dimensions"=NULL, "dimension names"=NULL,
+  error.types <- list("variable issues"=NULL, "number of dimensions"=NULL, "dimension names"=NULL,
                       "dimension definitions"=NULL, "units"=NULL, "data ranges"=NULL,
                       "data coverage"=NULL, "time span"=NULL)
   for(fn in 1:length(files)){
@@ -661,10 +661,10 @@ do_test.files <- function(files, data.reportname, landseamask, save2file, thisda
                         if(!is.null(test$cover.f))test$cover.f,
                         if(!is.null(test$timespan.f))test$timespan.f)
     if(length(collected)>0)
-      data.issues[length(data.issues)+1] <- paste0("data range and coverage issues (",test$warnings," warngings; ",test$errors," errors) with ",files[fn],"\n",collected)
+      data.issues[length(data.issues)+1] <- paste0("data range and coverage issues (",test$warnings," warnings; ",test$errors," errors) with ",files[fn],"\n",collected)
   }
   if(length(data.issues)>0){
-    cat(length(data.issues),"file names issues in ",length(files)," files, with ",warnings,"Warnings and ",errors,"errors.\n\n")
+    cat(length(data.issues),"file name issues in ",length(files)," files, with ",warnings,"Warnings and ",errors,"errors.\n\n")
     #indent.switch(indent=4)
     cat(data.issues[[1]],sep="\n")  
     if(length(data.issues)>2)
