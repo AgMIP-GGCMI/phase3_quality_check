@@ -1,6 +1,7 @@
 require(ncdf4)
 
 save2file <- FALSE
+ignore <- list("years"=TRUE)
 
 # Paths
 # path_AgMIP.output <- "/project2/ggcmi/AgMIP.output/"
@@ -50,7 +51,7 @@ reportnames <- setup_reports(report_dir, report_dir_web, save2file, thisdate, mo
 # Test filenames
 #######################
 files <- dir(recursive=TRUE, include.dirs=FALSE)
-do_test.filenames(files, reportnames$fn, save2file, thisdate, model.name)
+do_test.filenames(files, reportnames$fn, save2file, thisdate, model.name, ignore)
 
 
 ##############################################

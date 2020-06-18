@@ -54,7 +54,7 @@ split_path <- function(path) {
 }
 
 
-test.filename <- function(file_path, model.name){
+test.filename <- function(file_path, model.name, ignore){
   # <modelname>_<climate_forcing>_<bias_adjustment>_<climate_scenario>_<soc_scenario>_<sens_scenario>_<variable>-<crop>-<irrigation>_<region>_<timestep>_<start_year>_<end_year>.nc
   ending.f <- mname.f <- climate.f <- bias.f <- scen.f <- soc.f <- sens.f <- var.f <- crop.f <- irrig.f <- region.f <- timestep.f <- 
     starty.f <- endy.f <- NULL
@@ -94,7 +94,6 @@ test.filename <- function(file_path, model.name){
       mname.f <- paste("  => WARNING: directory that should be", model.name, "in directory structure is instead", dir_bits[5], "\n")
     }
     warnings <- warnings + 1
-    browser()
   }
   
   # Check that filename has correct value for <climate_forcing>
@@ -106,7 +105,6 @@ test.filename <- function(file_path, model.name){
       climate.f <- paste("  => ERROR:", bits[2], "not in set of GCMs\n")
       errors <- errors + 1
     }
-    browser()
   }
   
   # Check that directory structure has correct value for <climate_forcing>
@@ -117,33 +115,28 @@ test.filename <- function(file_path, model.name){
       mname.f <- paste0("  => WARNING: <climate_forcing> directory name (", dir_bits[3], ")not in set of GCMs\n")
     }
     warnings <- warnings + 1
-    browser()
   }
   
   # Check that bias adjustment string is correct
   if(bits[3]!="w5e5"){
-    browser()
     bias.f <- paste("  => ERROR: bias_adjustment string",bits[3],"not 'w5e5'\n")
     errors <- errors + 1 
   }
   
   # Check that SSP/RCP scenario is valid
   if(!(bits[4]%in%rcsps)){
-    browser()
     soc.f <- paste("  => ERROR: SSP/RCP scenario",bits[4],"not in set of scenarios",rcsps,"\n")
     errors <- errors + 1
   }
   
   # Check that socioeconomic scenario is valid
   if(!(bits[5]%in%tolower(socs))){
-    browser()
     soc.f <- paste("  => ERROR: soc scenario",bits[5],"not in set of soc scenarios\n")
     errors <- errors + 1
   }
   
   # Check that sensitivity scenario is valid
   if(!(bits[6]%in%tolower(sens))){
-    browser()
     sens.f <- paste("  => ERROR: sens scenario",bits[6],"not in set of soc scenarios\n")
     errors <- errors + 1
   }
@@ -151,23 +144,19 @@ test.filename <- function(file_path, model.name){
   # Get and check variable in filename
   bits2 <- unlist(strsplit(bits[7],"-"))
   if(length(bits2)!=3){
-    browser()
     var.f <- paste("  => ERROR: wrong number of elements in variable string:",bits[7],"\n")
     errors <- errors + 1
   }
   else{
     if(!(bits2[1]%in%vars)){
-      browser()
       var.f <- paste("  => ERROR: variable",bits2[1],"not in set of variables\n")
       errors <- errors + 1
     }
     if(!(bits2[2]%in%crops)){
-      browser()
       crops.f <- paste("  => WARNING: variable",bits2[2],"not in set of crops\n")
       warnings <- warnings + 1
     }
     if(!(bits2[3]%in%irrigs)){
-      browser()
       irrig.f <- paste("  => WARNING: variable",bits2[2],"not in set of crops\n")
       warnings <- warnings + 1
     }
@@ -175,32 +164,30 @@ test.filename <- function(file_path, model.name){
   
   # Check that area coverage element is correct
   if(!(bits[8]=="global")){
-    browser()
     region.f <- paste("  => ERROR: region",bits[8],"not 'global'\n")
     errors <- errors + 1
   }
   
   # Check that temporal resolution element is correct
   if(!(bits[9]=="annual")){
-    browser()
     timestep.f <- paste("  => ERROR: timestep",bits[9],"not 'annual'\n")
     errors <- errors + 1
   }
   
   # Check that time span is correct
-  scenario <- bits[4]
-  is_future <- scenario%in%rcsps[-c(1,2)]
-  startyear <- bits[10]
-  endyear <- bits[11]
-  if(!((!is_future & startyear==1850) | (is_future & startyear==2015))){
-    browser()
-    starty.f <- paste("  => ERROR: startyear",startyear,"not compatible with scenario",scenario,"\n")
-    errors <- errors + 1
-  }
-  if(!((scenario==rcsps[2] & endyear==2014) | (scenario%in%rcsps[-2] & endyear==2100))){
-    browser()
-    endy.f <- paste("  => ERROR: endyear",endyear,"not compatible with scenario",scenario,"\n")
-    errors <- errors + 1
+  if (!ignore$years) {
+    scenario <- bits[4]
+    is_future <- scenario%in%rcsps[-c(1,2)]
+    startyear <- bits[10]
+    endyear <- bits[11]
+    if(!((!is_future & startyear==1850) | (is_future & startyear==2015))){
+      starty.f <- paste("  => ERROR: startyear",startyear,"not compatible with scenario",scenario,"\n")
+      errors <- errors + 1
+    }
+    if(!((scenario==rcsps[2] & endyear==2014) | (scenario%in%rcsps[-2] & endyear==2100))){
+      endy.f <- paste("  => ERROR: endyear",endyear,"not compatible with scenario",scenario,"\n")
+      errors <- errors + 1
+    }
   }
   
   # Save result
@@ -353,7 +340,7 @@ setup_reports <- function(report_dir, report_dir_web, save2file, thisdate, model
 }
 
 
-do_test.filenames <- function(files, fn.reportname, save2file, thisdate, model.name) {
+do_test.filenames <- function(files, fn.reportname, save2file, thisdate, model.name, ignore) {
   
   fname.issues <- list()
   
@@ -365,8 +352,8 @@ do_test.filenames <- function(files, fn.reportname, save2file, thisdate, model.n
                       "unknown scenario"=NULL,"unknown soc setting"=NULL,"unknown sensitivty setting"=NULL,
                       "wrong variable"=NULL,"unknown crop"=NULL,"wrong irrigation setting"=NULL,
                       "wrong region"=NULL,"wrong time step"=NULL,"wrong start year"=NULL,"wrong end year"=NULL,"wrong bias adjustment"=NULL)
-  for(fn in 1:1){
-    test <- test.filename(files[fn], model.name)
+  for(fn in 1:length(files)){
+    test <- test.filename(files[fn], model.name, ignore)
     warnings <- warnings + test$warnings
     errors <- errors + test$errors
     if(!is.null(test$ending.f)) error.types[[1]] <- c(error.types[[1]],fn)
@@ -417,14 +404,15 @@ do_test.filenames <- function(files, fn.reportname, save2file, thisdate, model.n
   if (save2file) sink(file=fn.reportname,append=F)
   cat("********  GGCMI Phase 3 file check report ********\n\n")
   cat(thisdate,"\n\n")
+  if (ignore$years) {
+    cat("WARNING: Not checking years in filenames\n\n")
+  }
   if(length(fname.issues)>0){
     cat(unlist(fname.issues),sep="\n")
   } else {
     cat("no file naming issues detected.\n")
   }
   if (save2file) sink()
-
-  stop()
 }
 
 
