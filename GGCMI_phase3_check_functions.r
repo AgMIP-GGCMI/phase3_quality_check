@@ -124,7 +124,7 @@ test.filename <- function(fn){
        warnings=warnings,errors=errors)
 }
 
-test.file <- function(fn){
+test.file <- function(fn, landseamask){
   var.f <- ndim.f <- dimname.f <- dimdef.f <- units.f <- range.f <- cover.f <- NULL  
   warnings <- errors <- 0
 
@@ -470,7 +470,7 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sims.
 }
 
 
-do_test.files <- function(files, data.reportname) {
+do_test.files <- function(files, data.reportname, landseamask) {
   
   data.issues <- list()
   
@@ -482,7 +482,7 @@ do_test.files <- function(files, data.reportname) {
                       "dimension definitions"=NULL,"units"=NULL,"data ranges"=NULL,
                       "data coverage"=NULL)
   for(fn in 1:length(files)){
-    test <- test.file(files[fn])
+    test <- test.file(files[fn], landseamask)
     warnings <- warnings + test$warnings
     errors <- errors + test$errors
     if(!is.null(test$var.f)) error.types[[1]] <- c(error.types[[1]],fn)

@@ -8,12 +8,6 @@ report_dir <- "" # Set to "" to use working directory (top-level directory of ou
 report_dir_web <- "" # Set to "" to ignore
 ggcmi_function_file <- "/Users/Shared/GGCMI/inputs/phase3/ISIMIP3/_MATLAB_ISIMIP3/phase3_quality_check/GGCMI_phase3_check_functions.r"
 
-# get GGCM folder name passed as argument to script call
-args <- commandArgs(trailingOnly = TRUE)
-if (length(args)==0) {
-  stop("GGCM folder name must be supplied (input file).", call.=FALSE)
-}
-
 # settings and definitions ####
 crops <- c("mai","ri1","ri2","soy","swh","wwh","mil","sor","bea")
 irrigs <- c("firr","noirr")
@@ -24,10 +18,17 @@ gcms <- c("GFDL-ESM4","IPSL-CM6A-LR","MPI-ESM1-2-HR","MRI-ESM2-0","UKESM1-0-LL")
 vars <- c("yield","biom","cnyield","plantday","plantyear","anthday","matyday","pirrww","aet","soilmoist1m",
           "transp","evap","runoff","rootm","tnrup","tnrin","tnrloss","n2oemis","n2emis","nleach","tcemis","ch4emis")
 
-# Source functions
+
+#######################
+# Set up
+#######################
 source(ggcmi_function_file)
 
-landseamask <- readmask.nc(landseamask_file)
+# get GGCM folder name passed as argument to script call
+args <- commandArgs(trailingOnly = TRUE)
+if (length(args)==0) {
+  stop("GGCM folder name must be supplied (input file).", call.=FALSE)
+}
 
 # Get and change working directory,
 # ensuring that the last character of path_AgMIP.output is /
@@ -37,10 +38,10 @@ if (substr(path_AgMIP.output, nchar(path_AgMIP.output), nchar(path_AgMIP.output)
 working_dir <- paste0(path_AgMIP.output,args[1],"/phase3b")
 setwd(working_dir)
 
+# Import landseamask
+landseamask <- readmask.nc(landseamask_file)
 
-#######################
-# Set up
-#######################
+# Set up reports
 reportnames <- setup_reports(report_dir, report_dir_web)
 
 
@@ -60,5 +61,5 @@ do_test.file_set(crops, irrigs, rcsps, socs, sens, gcms, vars, reportnames$sim)
 ##############################################
 # Test file contents
 ##############################################
-do_test.files(files, reportnames$data)
+do_test.files(files, reportnames$data, landseamask)
 
