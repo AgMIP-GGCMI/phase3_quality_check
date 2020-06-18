@@ -9,6 +9,7 @@ report_dir_web <- "" # Set to "" to ignore
 ggcmi_function_file <- "/Users/Shared/GGCMI/inputs/phase3/ISIMIP3/_MATLAB_ISIMIP3/phase3_quality_check/GGCMI_phase3_check_functions.r"
 
 # settings and definitions ####
+model.name.orig <- "lpj-guess"
 crops <- c("mai","ri1","ri2","soy","swh","wwh","mil","sor","bea")
 irrigs <- c("firr","noirr")
 rcsps <- c("picontrol","historical","ssp126","ssp585")
@@ -27,7 +28,8 @@ source(ggcmi_function_file)
 # get GGCM folder name passed as argument to script call
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args)==0) {
-  stop("GGCM folder name must be supplied (input file).", call.=FALSE)
+  # stop("GGCM folder name must be supplied (input file).", call.=FALSE)
+  args = c(model.name.orig)
 }
 
 # Get and change working directory,
