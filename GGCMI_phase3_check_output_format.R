@@ -57,7 +57,7 @@ do_test.filenames(files, reportnames$fn, save2file, thisdate, model.name, ignore
 ##############################################
 # Test that all expected files exist
 ##############################################
-do_test.file_set(crops, irrigs, rcsps, socs, sens, gcms, vars, reportnames$sim, save2file)
+do_test.file_set(crops, irrigs, rcsps, socs, sens, gcms, vars, reportnames$sim, save2file, ignore)
 
 
 ##############################################

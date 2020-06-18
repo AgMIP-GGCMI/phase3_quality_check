@@ -416,7 +416,7 @@ do_test.filenames <- function(files, fn.reportname, save2file, thisdate, model.n
 }
 
 
-do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sims.reportname, save2file) {
+do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sims.reportname, save2file, ignore) {
   
   # testing as all file names are wrong
   sens <- c(sens,"transco2")
@@ -432,9 +432,21 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sims.
           for(sen in 1:length(sens)){
             for(gcm in 1:length(gcms)){
               for(var in 1:length(vars)){
-                fn <- paste0(model.name,"_",tolower(gcms[gcm]),"_w5e5_",rcsps[rcsp],"_",socs[soc],"_",sens[sen],"_",vars[var],"-",crops[crop],"-",irrigs[irrig],"_global_annual_",ifelse(rcsp<3,1850,2015),"_",ifelse(rcsp==2,2014,2100),".nc")
-                #fn <- paste0(model.name,"_",tolower(gcms[gcm]),"_w5e5_",rcsps[rcsp],"_",socs[soc],"_transco2_",vars[var],"-",crops[crop],"-",irrigs[irrig],"_global_annual_",ifelse(rcsp<3,1850,2015),"_",ifelse(rcsp==2,2014,2100),".nc")
-                if(file.exists(fn)){
+                if (ignore$years) {
+                  fn <- paste0(tolower(gcms[gcm]), "/", rcsps[rcsp], "/", crops[crop], "/", 
+                               model.name,"_",tolower(gcms[gcm]),"_w5e5_",rcsps[rcsp],"_",
+                               socs[soc],"_",sens[sen],"_",vars[var],"-",crops[crop],"-",
+                               irrigs[irrig],"_global_annual_*.nc")
+                  does_exist <- !identical(Sys.glob(fn), character(0))
+                } else {
+                  fn <- paste0(tolower(gcms[gcm]), "/", rcsps[rcsp], "/", crops[crop], "/", 
+                               model.name,"_",tolower(gcms[gcm]),"_w5e5_",rcsps[rcsp],"_",
+                               socs[soc],"_",sens[sen],"_",vars[var],"-",crops[crop],"-",
+                               irrigs[irrig],"_global_annual_",ifelse(rcsp<3,1850,2015),
+                               "_",ifelse(rcsp==2,2014,2100),".nc")
+                  does_exist <- file.exists(fn)
+                }
+                if(does_exist){
                   sims[crop,irrig,rcsp,soc,sen,gcm,var] <- 1
                 }
               }
@@ -450,7 +462,6 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sims.
   cat("/*===================      MISSING OUTPUTS        =============================================*/\n")
   cat("/*=============================================================================================*/\n")
   
-  
   if(!all(!is.na(sims))){
     mcrops <- mirrigs <- mrcsps <- msocs <- msens <- mgcms <- mvars <- NULL
     for(crop in 1:length(crops)){
@@ -460,6 +471,7 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sims.
     }
     if(length(mcrops)>0){
       cat("missing crops (",length(mcrops),"of",length(crops),"):",paste(crops[mcrops],collapse=", "),"\n")
+      browser()
     }
     for(irrig in 1:length(irrigs)){
       if(all(is.na(sims[,irrig,,,,,]))){
@@ -468,6 +480,7 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sims.
     }
     if(length(mirrigs)>0){
       cat("missing irrigation settings (",length(mirrigs),"of",length(irrigs),"):",paste(irrigs[mirrigs],collapse=", "),"\n")
+      browser()
     }
     for(rcsp in 1:length(rcsps)){
       if(all(is.na(sims[,,rcsp,,,,]))){
@@ -476,6 +489,7 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sims.
     }
     if(length(mrcsps)>0){
       cat("missing scenarios (",length(mrcsps),"of",length(rcsps),"):",paste(rcsps[mrcsps],collapse=", "),"\n")
+      browser()
     }
     for(soc in 1:length(socs)){
       if(all(is.na(sims[,,,soc,,,]))){
@@ -484,6 +498,7 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sims.
     }
     if(length(msocs)>0){
       cat("missing soc settings (",length(msocs),"of",length(socs),"):",paste(socs[msocs],collapse=", "),"\n")
+      browser()
     }
     for(sen in 1:length(sens)){
       if(all(is.na(sims[,,,,sen,,]))){
@@ -492,6 +507,7 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sims.
     }
     if(length(msens)>0){
       cat("missing sensitivity scenarios (",length(msens),"of",length(sens),"):",paste(sens[msens],collapse=", "),"\n")
+      browser()
     }
     for(gcm in 1:length(gcms)){
       if(all(is.na(sims[,,,,,gcm,]))){
@@ -500,6 +516,7 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sims.
     }
     if(length(mgcms)>0){
       cat("missing gcms (",length(mgcms),"of",length(gcms),"):",paste(gcms[mgcms],collapse=", "),"\n")
+      browser()
     }
     for(var in 1:length(vars)){
       if(all(is.na(sims[,,,,,,var]))){
@@ -508,6 +525,7 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sims.
     }
     if(length(mvars)>0){
       cat("missing variables (",length(mvars),"of",length(vars),"):",paste(vars[mvars],collapse=", "),"\n")
+      browser()
     }
     
     
@@ -528,11 +546,14 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sims.
       if (save2file) sink()
       
     }
+    browser()
     #c(1:length(crops))[-mcrops]
   } else {
     cat("\nno issues detected\n\n")
   }
   if (save2file) sink()
+  
+  stop()
   
 }
 
