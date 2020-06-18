@@ -212,27 +212,111 @@ test.file <- function(fn, landseamask){
   index <- which(vars==bits2[1])
   if(length(index)>0){
     nc <- nc_open(fn)
-    if(nc$ndims!=3){
-      ndim.f <- paste("  => ERROR: wrong number of dimensions",nc$ndims,"\n")
-      errors <- errors + 1
-    }
+    
+    #=#=#=#=#=#=#=#=#=#=#=#=#=#=
+    # Check metadata
+    #=#=#=#=#=#=#=#=#=#=#=#=#=#=
     var <- names(nc$var)[1]
     if(var!=paste0(bits2[1],"_",bits2[2])){
+      browser()
       var.f <- paste("  => ERROR: variable incorrectly named",var,"instead of",paste0(bits2[1],"_",bits2[2],".\n"))
       errors <- errors + 1
     }
     if(nc$var[[1]]$units!=target_units(var)){
+      browser()
       units.f <- paste(units.f,"  => ERROR: variable units incorrectly defined",nc$var[[1]]$units,"instead of '",target_units(var),"'\n")
       errors <- errors + 1
     }
     if(nc$var[[1]]$missval!=1e20){
+      browser()
       range.f <- paste(range.f,"  => ERROR: variable missval incorrectly defined",nc$var[[1]]$missval,"instead of '1e20'\n")
       errors <- errors + 1
     }
     
+    #=#=#=#=#=#=#=#=#=#=#=#=#=#=
+    # Check dimensions
+    #=#=#=#=#=#=#=#=#=#=#=#=#=#=
+    
+    # Check for correct number of dimensions
+    if(nc$ndims!=3){
+      browser()
+      ndim.f <- paste("  => ERROR: wrong number of dimensions",nc$ndims,"\n")
+      errors <- errors + 1
+    }
+    
+    # Check lat
+    if(!("lat" %in% names(nc$dim))){
+      browser()
+      dimname.f <- paste(dimname.f,"  => ERROR: latitude dimension 'lat' missing")
+      errors <- errors + 1
+    } else {
+      lat <- ncvar_get(nc,"lat")
+      if(!all(lat==landseamask$lat)){
+        browser()
+        dimdef.f <- paste(dimdef.f,"  => ERROR: latitude dimension is incorrectly defined, ranging from",lat[1],"to",lat[length(lat)],"by",lat[2]-lat[1],"\n")
+        errors <- errors + 1
+      }
+      if(nc$dim$lat$units!="degrees_north"){
+        browser()
+        dimdef.f <- paste(dimdef.f,"  => ERROR: latitude units incorrectly defined",nc$dim$lat$units,"instead of 'degrees_north'\n")
+        errors <- errors + 1
+      }
+    }
+    
+    # Check lon
+    if(!("lon" %in% names(nc$dim))){
+      browser()
+      dimname.f <- paste(dimname.f,"  => ERROR: longitude dimension 'lon' missing")
+      errors <- errors + 1
+    } else {
+      lon <- ncvar_get(nc,"lon")
+      if(!all(lon==landseamask$lon)){
+        browser()
+        dimdef.f <- paste(dimdef.f,"  => ERROR: longitude dimension is incorrectly defined, ranging from",lon[1],"to",lon[length(lon)],"by",lon[2]-lon[1],"\n")
+        errors <- errors + 1
+      }
+      if(nc$dim$lon$units!="degrees_east"){
+        browser()
+        dimdef.f <- paste(dimdef.f,"  => ERROR: longitude units incorrectly defined",nc$dim$lon$units,"instead of 'degrees_east'\n")
+        errors <- errors + 1
+      }
+    }
+    
+    # Check time
+    if(!("time" %in% names(nc$dim))){
+      browser()
+      dimname.f <- paste(dimname.f,"  => ERROR: time dimension 'time' missing")
+      errors <- errors + 1
+    } else {
+      time <- ncvar_get(nc,"time")
+      if(!all(lat==landseamask$lat)){
+        browser()
+        dimdef.f <- paste(dimdef.f,"  => ERROR: latitude dimension is incorrectly defined, ranging from",lat[1],"to",lat[length(lat)],"by",lat[2]-lat[1],"\n")
+        errors <- errors + 1
+      }
+      if (unlist(strsplit(var, "-"))[1] == "soilmoist1m") {
+        since_units <- "months"
+      } else {
+        since_units <- "growing seasons"
+      }
+      if(nc$dim$time$units!="growing seasons since 1850-01-01 00:00:00"){
+        dimdef.f <- paste0(dimdef.f,"  => ERROR: time units incorrectly defined as '",nc$dim$time$units,"' instead of '",since_units," since 1850-01-01 00:00:00'\n")
+        errors <- errors + 1
+      }
+    }
+    browser()
+    
+    #=#=#=#=#=#=#=#=#=#=#=#=#=#=
+    # Check variable data
+    #=#=#=#=#=#=#=#=#=#=#=#=#=#=
+    
+    # Read
     data <- ncvar_get(nc,var)
     test1 <- data[,,1]
     test2 <- data[,,dim(data)[3]]
+    data.r <- range(data,na.rm=T)
+    
+    # Check for match to land/ocean mask
     if(!all(is.finite(test1[landseamask$mask==1]))){
       cover.f <- paste(cover.f,"  => WARNING: not all land with valid values in first time step (",length(which(is.finite(test1[landseamask$mask==1]))),"of",length(which(landseamask$mask==1)),")\n")
       warnings <- warnings + 1
@@ -249,53 +333,13 @@ test.file <- function(fn, landseamask){
       cover.f <- paste(cover.f,"  => ERROR: not all ocean with invalid values in last time step (",length(which(!is.finite(test2[landseamask$mask==0]))),"of",length(which(landseamask$mask==0)),")\n")
       errors <- errors + 1
     }
-    data.r <- range(data,na.rm=T)
+    
+    # Check for valid values
     if(min(data.r) < ranges[[index]][1] | max(data.r) > ranges[[index]][2]){
       range.f <- paste(range.f,"  => WARNING: data points (range:",paste(data.r,collapse=" "),") outside valid range",paste(ranges[[index]],collapse=" "),"\n")
       warnings <- warnings + 1
     }
-    if(!("lat" %in% names(nc$dim))){
-      dimname.f <- paste(dimname.f,"  => ERROR: latitude dimension 'lat' missing")
-      errors <- errors + 1
-    } else {
-      lat <- ncvar_get(nc,"lat")
-      if(!all(lat==landseamask$lat)){
-        dimdef.f <- paste(dimdef.f,"  => ERROR: latitude dimension is incorrectly defined, ranging from",lat[1],"to",lat[length(lat)],"by",lat[2]-lat[1],"\n")
-        errors <- errors + 1
-      }
-      if(nc$dim$lat$units!="degrees_north"){
-        dimdef.f <- paste(dimdef.f,"  => ERROR: latitude units incorrectly defined",nc$dim$lat$units,"instead of 'degrees_north'\n")
-        errors <- errors + 1
-      }
-    }
-    if(!("lon" %in% names(nc$dim))){
-      dimname.f <- paste(dimname.f,"  => ERROR: longitude dimension 'lon' missing")
-      errors <- errors + 1
-    } else {
-      lon <- ncvar_get(nc,"lon")
-      if(!all(lon==landseamask$lon)){
-        dimdef.f <- paste(dimdef.f,"  => ERROR: longitude dimension is incorrectly defined, ranging from",lon[1],"to",lon[length(lon)],"by",lon[2]-lon[1],"\n")
-        errors <- errors + 1
-      }
-      if(nc$dim$lon$units!="degrees_east"){
-        dimdef.f <- paste(dimdef.f,"  => ERROR: longitude units incorrectly defined",nc$dim$lon$units,"instead of 'degrees_east'\n")
-        errors <- errors + 1
-      }
-    }
-    if(!("time" %in% names(nc$dim))){
-      dimname.f <- paste(dimname.f,"  => ERROR: time dimension 'time' missing")
-      errors <- errors + 1
-    } else {
-      time <- ncvar_get(nc,"time")
-      if(!all(lat==landseamask$lat)){
-        dimdef.f <- paste(dimdef.f,"  => ERROR: latitude dimension is incorrectly defined, ranging from",lat[1],"to",lat[length(lat)],"by",lat[2]-lat[1],"\n")
-        errors <- errors + 1
-      }
-      if(nc$dim$time$units!="growing seasons since 1850-01-01 00:00:00"){
-        dimdef.f <- paste(dimdef.f,"  => ERROR: time units incorrectly defined",nc$dim$time$units,"instead of 'growing seasons since 1850-01-01 00:00:00'\n")
-        errors <- errors + 1
-      }
-    }
+    
     
   } else {
     var.f <- paste("  => ERROR: Variable",bits2[1],"unknown\n")
@@ -575,7 +619,8 @@ do_test.files <- function(files, data.reportname, landseamask, save2file, thisda
   error.types <- list("variable isssues"=NULL,"number of dimensions"=NULL,"dimension names"=NULL,
                       "dimension definitions"=NULL,"units"=NULL,"data ranges"=NULL,
                       "data coverage"=NULL)
-  for(fn in 1:length(files)){
+  for(fn in 1:1){
+    cat("Reading", fn, "of", length(files), "(", files[fn], ")\n")
     test <- test.file(files[fn], landseamask)
     warnings <- warnings + test$warnings
     errors <- errors + test$errors
@@ -622,6 +667,7 @@ do_test.files <- function(files, data.reportname, landseamask, save2file, thisda
     cat("no data range and coverage issues detected.\n")
   }
   if (save2file) sink()
+  stop("stopping")
 }
 
 
