@@ -65,9 +65,13 @@ test.filename <- function(file_path, model.name){
   # split rest of file name string into elements
   bits <- unlist(strsplit(bits[1],"_"))
   if(bits[1]!=tolower(model.name)){
-    browser()
-    mname.f <- paste("  => WARNING: model name",bits[1],"not the same as folder name",model.name,"\n")
+    if (tolower(bits[1])==tolower(model.name)) {
+      mname.f <- "  => WARNING: <modelname> in filename should be all lowercase\n"
+    } else {
+      mname.f <- paste0("  => WARNING: <modelname> in filename (",bits[1],") does not match value provided in script (",model.name,")\n")
+    }
     warnings <- warnings + 1
+    browser()
   }
   if(!(bits[2]%in%tolower(gcms))){
     browser()
