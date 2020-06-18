@@ -15,7 +15,7 @@ model.name <- "lpj-guess"
 crops <- c("mai","ri1","ri2","soy","swh","wwh","mil","sor","bea")
 irrigs <- c("firr","noirr")
 rcsps <- c("picontrol","historical","ssp126","ssp585")
-socs <- c("2015soc")
+socs <- c("histsoc","2015soc")
 sens <- c("default","2015co2")
 gcms <- c("GFDL-ESM4","IPSL-CM6A-LR","MPI-ESM1-2-HR","MRI-ESM2-0","UKESM1-0-LL")
 vars <- c("yield","biom","cnyield","plantday","plantyear","anthday","matyday","pirrww","aet","soilmoist1m",
