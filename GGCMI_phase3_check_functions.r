@@ -217,9 +217,10 @@ test.file <- function(fn, landseamask){
     # Check metadata
     #=#=#=#=#=#=#=#=#=#=#=#=#=#=
     var <- names(nc$var)[1]
-    if(var!=paste0(bits2[1],"_",bits2[2])){
+    target_varname <- paste0(bits2[1],"-",bits2[2],"-",bits2[3])
+    if(var != target_varname){
       browser()
-      var.f <- paste("  => ERROR: variable incorrectly named",var,"instead of",paste0(bits2[1],"_",bits2[2],".\n"))
+      var.f <- paste("  => ERROR: variable incorrectly named",var,"instead of",target_varname,".\n")
       errors <- errors + 1
     }
     if(nc$var[[1]]$units!=target_units(var)){
