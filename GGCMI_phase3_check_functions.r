@@ -228,7 +228,7 @@ test.file <- function(fn, landseamask){
 }
 
 
-setup_reports <- function(report_dir, report_dir_web, save2file) {
+setup_reports <- function(report_dir, report_dir_web, save2file, thisdate) {
   
   # If report_dir not specified, set it to working_dir
   if (report_dir == "") {
@@ -251,9 +251,8 @@ setup_reports <- function(report_dir, report_dir_web, save2file) {
   if (save2file) sink(file=reportname,append=F)
   #outfile <- file(reportname,"wt")
   
-  date <- date()
   cat("********  GGCMI Phase 3 file check summary report ********\n\n")
-  cat(date,"\n\n")
+  cat(thisdate,"\n\n")
   cat("there are more detailed reports for specific aspects:\n")
   if (report_dir_web != "") {
     cat(fn.reportname2,"\n")
@@ -269,7 +268,7 @@ setup_reports <- function(report_dir, report_dir_web, save2file) {
 }
 
 
-do_test.filenames <- function(files, fn.reportname, save2file) {
+do_test.filenames <- function(files, fn.reportname, save2file, thisdate) {
   
   fname.issues <- list()
   
@@ -332,7 +331,7 @@ do_test.filenames <- function(files, fn.reportname, save2file) {
   
   if (save2file) sink(file=fn.reportname,append=F)
   cat("********  GGCMI Phase 3 file check report ********\n\n")
-  cat(date,"\n\n")
+  cat(thisdate,"\n\n")
   if(length(fname.issues)>0){
     cat(unlist(fname.issues),sep="\n")
   } else {
@@ -470,7 +469,7 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sims.
 }
 
 
-do_test.files <- function(files, data.reportname, landseamask, save2file) {
+do_test.files <- function(files, data.reportname, landseamask, save2file, thisdate) {
   
   data.issues <- list()
   
@@ -521,7 +520,7 @@ do_test.files <- function(files, data.reportname, landseamask, save2file) {
   
   if (save2file) sink(file=data.reportname,append=F)
   cat("********  GGCMI Phase 3 data range and coverage check report ********\n\n")
-  cat(date,"\n\n")
+  cat(thisdate,"\n\n")
   if(length(data.issues)>0){
     cat(unlist(data.issues),sep="\n")
   } else {

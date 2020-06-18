@@ -26,6 +26,7 @@ vars <- c("yield","biom","cnyield","plantday","plantyear","anthday","matyday","p
 # Set up
 #######################
 source(ggcmi_function_file)
+thisdate <- date()
 
 # get GGCM folder name passed as argument to script call
 args <- commandArgs(trailingOnly = TRUE)
@@ -49,14 +50,14 @@ setwd(working_dir)
 landseamask <- readmask.nc(landseamask_file)
 
 # Set up reports
-reportnames <- setup_reports(report_dir, report_dir_web, save2file)
+reportnames <- setup_reports(report_dir, report_dir_web, save2file, thisdate)
 
 
 #######################
 # Test filenames
 #######################
 files <- dir(recursive=TRUE, include.dirs=FALSE)
-model.name <- do_test.filenames(files, reportnames$fn, save2file)
+model.name <- do_test.filenames(files, reportnames$fn, save2file, thisdate)
 
 
 ##############################################
@@ -68,5 +69,5 @@ do_test.file_set(crops, irrigs, rcsps, socs, sens, gcms, vars, reportnames$sim, 
 ##############################################
 # Test file contents
 ##############################################
-do_test.files(files, reportnames$data, landseamask, save2file)
+do_test.files(files, reportnames$data, landseamask, save2file, thisdate)
 
