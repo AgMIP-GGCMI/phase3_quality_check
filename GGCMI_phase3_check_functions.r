@@ -120,26 +120,35 @@ test.filename <- function(file_path, model.name){
     browser()
   }
   
+  # Check that bias adjustment string is correct
   if(bits[3]!="w5e5"){
     browser()
     bias.f <- paste("  => ERROR: bias_adjustment string",bits[3],"not 'w5e5'\n")
     errors <- errors + 1 
   }
+  
+  # Check that SSP/RCP scenario is valid
   if(!(bits[4]%in%rcsps)){
     browser()
     soc.f <- paste("  => ERROR: SSP/RCP scenario",bits[4],"not in set of scenarios",rcsps,"\n")
     errors <- errors + 1
   }
+  
+  # Check that socioeconomic scenario is valid
   if(!(bits[5]%in%tolower(socs))){
     browser()
     soc.f <- paste("  => ERROR: soc scenario",bits[5],"not in set of soc scenarios\n")
     errors <- errors + 1
   }
+  
+  # Check that sensitivity scenario is valid
   if(!(bits[6]%in%tolower(sens))){
     browser()
     sens.f <- paste("  => ERROR: sens scenario",bits[6],"not in set of soc scenarios\n")
     errors <- errors + 1
   }
+  
+  # Get and check variable in filename
   bits2 <- unlist(strsplit(bits[7],"-"))
   if(length(bits2)!=3){
     browser()
@@ -163,16 +172,22 @@ test.filename <- function(file_path, model.name){
       warnings <- warnings + 1
     }
   }
+  
+  # Check that area coverage element is correct
   if(!(bits[8]=="global")){
     browser()
     region.f <- paste("  => ERROR: region",bits[8],"not 'global'\n")
     errors <- errors + 1
   }
+  
+  # Check that temporal resolution element is correct
   if(!(bits[9]=="annual")){
     browser()
     timestep.f <- paste("  => ERROR: timestep",bits[9],"not 'annual'\n")
     errors <- errors + 1
   }
+  
+  # Check that time span is correct
   if(!((bits[4]%in%rcsps[c(1,2)] & bits[10]==1850) | (bits[4]%in%rcsps[-c(1,2)] & bits[10]==2015))){
     browser()
     starty.f <- paste("  => ERROR: startyear",bits[10],"not compatible with scenario",bits[4],"\n")
@@ -183,6 +198,8 @@ test.filename <- function(file_path, model.name){
     endy.f <- paste("  => ERROR: endyear",bits[11],"not compatible with scenario",bits[4],"\n")
     errors <- errors + 1
   }
+  
+  # Save result
   list(ending.f=ending.f,mname.f=mname.f,climate.f=climate.f,bias.f=bias.f,scen.f=scen.f,soc.f=soc.f,sens.f=sens.f,
        var.f=var.f,crop.f=crop.f,irrig.f=irrig.f,region.f=region.f,timestep.f=timestep.f,starty.f=starty.f,endy.f=endy.f,
        warnings=warnings,errors=errors)
