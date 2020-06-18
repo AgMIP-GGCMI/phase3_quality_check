@@ -188,14 +188,18 @@ test.filename <- function(file_path, model.name){
   }
   
   # Check that time span is correct
-  if(!((bits[4]%in%rcsps[c(1,2)] & bits[10]==1850) | (bits[4]%in%rcsps[-c(1,2)] & bits[10]==2015))){
+  scenario <- bits[4]
+  is_future <- scenario%in%rcsps[-c(1,2)]
+  startyear <- bits[10]
+  endyear <- bits[11]
+  if(!((!is_future & startyear==1850) | (is_future & startyear==2015))){
     browser()
-    starty.f <- paste("  => ERROR: startyear",bits[10],"not compatible with scenario",bits[4],"\n")
+    starty.f <- paste("  => ERROR: startyear",startyear,"not compatible with scenario",scenario,"\n")
     errors <- errors + 1
   }
-  if(!((bits[4]==rcsps[2] & bits[11]==2014) | (bits[4]%in%rcsps[-2] & bits[11]==2100))){
+  if(!((scenario==rcsps[2] & endyear==2014) | (scenario%in%rcsps[-2] & endyear==2100))){
     browser()
-    endy.f <- paste("  => ERROR: endyear",bits[11],"not compatible with scenario",bits[4],"\n")
+    endy.f <- paste("  => ERROR: endyear",endyear,"not compatible with scenario",scenario,"\n")
     errors <- errors + 1
   }
   
