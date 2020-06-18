@@ -84,7 +84,6 @@ test.filename <- function(file_path, model.name){
       mname.f <- paste0("  => WARNING: <modelname> in filename (",bits[1],") does not match value provided in script (",model.name,")\n")
     }
     warnings <- warnings + 1
-    browser()
   }
   
   # Check that directory structure has correct value for model name
@@ -98,11 +97,29 @@ test.filename <- function(file_path, model.name){
     browser()
   }
   
+  # Check that filename has correct value for <climate_forcing>
   if(!(bits[2]%in%tolower(gcms))){
+    if (tolower(bits[2])%in%tolower(gcms)) {
+      climate.f <- "  => WARNING: <climate_forcing> in filename should be all lowercase\n"
+      warnings <- warnings + 1
+    } else {
+      climate.f <- paste("  => ERROR:", bits[2], "not in set of GCMs\n")
+      errors <- errors + 1
+    }
     browser()
-    climate.f <- paste("  => ERROR: climate",bits[2],"not in set of GCMs\n")
-    errors <- errors + 1
   }
+  
+  # Check that directory structure has correct value for <climate_forcing>
+  if(!(dir_bits[3]%in%tolower(gcms))){
+    if (tolower(dir_bits[3])%in%tolower(gcms)) {
+      mname.f <- "  => WARNING: <climate_forcing> in directory structure should be all lowercase\n"
+    } else {
+      mname.f <- paste0("  => WARNING: <climate_forcing> directory name (", dir_bits[3], ")not in set of GCMs\n")
+    }
+    warnings <- warnings + 1
+    browser()
+  }
+  
   if(bits[3]!="w5e5"){
     browser()
     bias.f <- paste("  => ERROR: bias_adjustment string",bits[3],"not 'w5e5'\n")
