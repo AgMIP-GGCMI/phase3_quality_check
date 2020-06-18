@@ -45,14 +45,25 @@ target_units <- function(var_in) {
   return(units)
 }
 
+# Given the path to a file/directory, split the path into its component parts
+# (each directory and file basename as separate items in a list)
+# Taken from https://stackoverflow.com/questions/29214932/split-a-file-path-into-folder-names-vector
+split_path <- function(path) {
+  if (dirname(path) %in% c(".", path)) return(basename(path))
+  return(c(basename(path), split_path(dirname(path))))
+}
+
+
 test.filename <- function(file_path, model.name){
   # <modelname>_<climate_forcing>_<bias_adjustment>_<climate_scenario>_<soc_scenario>_<sens_scenario>_<variable>-<crop>-<irrigation>_<region>_<timestep>_<start_year>_<end_year>.nc
   ending.f <- mname.f <- climate.f <- bias.f <- scen.f <- soc.f <- sens.f <- var.f <- crop.f <- irrig.f <- region.f <- timestep.f <- 
     starty.f <- endy.f <- NULL
   warnings <- errors <- 0
   
-  # Get filename
+  # Get filename and directory structure
   fn <- basename(file_path)
+  dir_path <- dirname(normalizePath(file_path))
+  dir_bits <- split_path(dir_path)
   
   # split up file name into elements
   # remove .nc parg
@@ -64,6 +75,8 @@ test.filename <- function(file_path, model.name){
   }
   # split rest of file name string into elements
   bits <- unlist(strsplit(bits[1],"_"))
+  
+  # Check that filename has correct value for model name
   if(bits[1]!=tolower(model.name)){
     if (tolower(bits[1])==tolower(model.name)) {
       mname.f <- "  => WARNING: <modelname> in filename should be all lowercase\n"
@@ -73,6 +86,18 @@ test.filename <- function(file_path, model.name){
     warnings <- warnings + 1
     browser()
   }
+  
+  # Check that directory structure has correct value for model name
+  if(dir_bits[5]!=tolower(model.name)){
+    if (tolower(dir_bits[5])==tolower(model.name)) {
+      mname.f <- "  => WARNING: <modelname> in directory structure should be all lowercase\n"
+    } else {
+      mname.f <- paste("  => WARNING: directory that should be", model.name, "in directory structure is instead", dir_bits[5], "\n")
+    }
+    warnings <- warnings + 1
+    browser()
+  }
+  
   if(!(bits[2]%in%tolower(gcms))){
     browser()
     climate.f <- paste("  => ERROR: climate",bits[2],"not in set of GCMs\n")
