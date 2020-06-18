@@ -17,7 +17,11 @@ readmask.nc <- function(filename,lo="lon",la="lat"){
   list(mask=mask,lon=lon,lat=lat)
 }
 
-target_units <- function(var_in) {
+target_units <- function(varcropirr_in) {
+  # Get variable name
+  var_in <- unlist(strsplit(varcropirr_in, "-"))[1]
+  
+  # Get units
   if (var_in == "plantyear") {
     units <- "calendar year"
   } else if (var_in == "plantday") {
@@ -39,6 +43,7 @@ target_units <- function(var_in) {
   } else if (var_in == "cnyield") {
       units <- ""
   } else {
+    browser()
     stop(paste(var_in, "not recognized when trying to get units"))
   }
     
