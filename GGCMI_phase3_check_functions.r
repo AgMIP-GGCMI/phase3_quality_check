@@ -43,7 +43,6 @@ target_units <- function(varcropirr_in) {
   } else if (var_in == "cnyield") {
       units <- ""
   } else {
-    browser()
     stop(paste(var_in, "not recognized when trying to get units"))
   }
     
@@ -219,7 +218,6 @@ test.file <- function(fn, landseamask){
     var <- names(nc$var)[1]
     target_varname <- paste0(bits2[1],"-",bits2[2],"-",bits2[3])
     if(var != target_varname){
-      browser()
       var.f <- paste("  => ERROR: variable incorrectly named",var,"instead of",target_varname,".\n")
       errors <- errors + 1
     }
@@ -243,25 +241,21 @@ test.file <- function(fn, landseamask){
     
     # Check for correct number of dimensions
     if(nc$ndims!=3){
-      browser()
       ndim.f <- paste("  => ERROR: wrong number of dimensions",nc$ndims,"\n")
       errors <- errors + 1
     }
     
     # Check lat
     if(!("lat" %in% names(nc$dim))){
-      browser()
       dimname.f <- paste(dimname.f,"  => ERROR: latitude dimension 'lat' missing")
       errors <- errors + 1
     } else {
       lat <- ncvar_get(nc,"lat")
       if(!all(lat==landseamask$lat)){
-        browser()
         dimdef.f <- paste(dimdef.f,"  => ERROR: latitude dimension is incorrectly defined, ranging from",lat[1],"to",lat[length(lat)],"by",lat[2]-lat[1],"\n")
         errors <- errors + 1
       }
       if(nc$dim$lat$units!="degrees_north"){
-        browser()
         dimdef.f <- paste(dimdef.f,"  => ERROR: latitude units incorrectly defined",nc$dim$lat$units,"instead of 'degrees_north'\n")
         errors <- errors + 1
       }
@@ -269,18 +263,15 @@ test.file <- function(fn, landseamask){
     
     # Check lon
     if(!("lon" %in% names(nc$dim))){
-      browser()
       dimname.f <- paste(dimname.f,"  => ERROR: longitude dimension 'lon' missing")
       errors <- errors + 1
     } else {
       lon <- ncvar_get(nc,"lon")
       if(!all(lon==landseamask$lon)){
-        browser()
         dimdef.f <- paste(dimdef.f,"  => ERROR: longitude dimension is incorrectly defined, ranging from",lon[1],"to",lon[length(lon)],"by",lon[2]-lon[1],"\n")
         errors <- errors + 1
       }
       if(nc$dim$lon$units!="degrees_east"){
-        browser()
         dimdef.f <- paste(dimdef.f,"  => ERROR: longitude units incorrectly defined",nc$dim$lon$units,"instead of 'degrees_east'\n")
         errors <- errors + 1
       }
@@ -288,13 +279,11 @@ test.file <- function(fn, landseamask){
     
     # Check time
     if(!("time" %in% names(nc$dim))){
-      browser()
       dimname.f <- paste(dimname.f,"  => ERROR: time dimension 'time' missing")
       errors <- errors + 1
     } else {
       time <- ncvar_get(nc,"time")
       if(!all(lat==landseamask$lat)){
-        browser()
         dimdef.f <- paste(dimdef.f,"  => ERROR: latitude dimension is incorrectly defined, ranging from",lat[1],"to",lat[length(lat)],"by",lat[2]-lat[1],"\n")
         errors <- errors + 1
       }
@@ -374,46 +363,44 @@ setup_reports <- function(report_dir, report_dir_web, save2file, thisdate, model
   
   # If report_dir not specified, set it to working_dir
   if (report_dir == "") {
-    report_dir = paste0(working_dir, "/")
+    report_dir = paste0(working_dir, "/../")
   }
   
   # delete old reports
   unlink(paste0(report_dir,model.name,"*"))
-  reportname <- paste0(report_dir,model.name,"_summary.txt")
-  fn.reportname <- paste0(report_dir,model.name,"_filename_issues.txt")
-  sim.reportname <- paste0(report_dir,model.name,"_simulations_missing.txt")
-  data.reportname <- paste0(report_dir,model.name,"_data_issues.txt")
-  reportnames <- list("fn"=fn.reportname, "sim"=sim.reportname, "data"=data.reportname)
-  if (report_dir_web != "") {
-    fn.reportname2 <- paste0(report_dir_web,model.name,"_filename_issues.txt")
-    sim.reportname2 <- paste0(report_dir_web,model.name,"_simulations_missing.txt")
-    data.reportname2 <- paste0(report_dir_web,model.name,"_data_issues.txt")
-  }
+  reportnames <- list(
+    "summary" = paste0(report_dir,model.name,"_summary.txt"),
+    "fn" = paste0(report_dir,model.name,"_filename_issues.txt"), 
+    "sim" = paste0(report_dir,model.name,"_simulations_missing.txt"), 
+    "data" = paste0(report_dir,model.name,"_data_issues.txt"))
   
-  if (save2file) sink(file=reportname,append=F)
-  #outfile <- file(reportname,"wt")
-  
+  if (save2file) sink(file=reportnames$summary,append=F)
+
   cat("********  GGCMI Phase 3 file check summary report ********\n\n")
   cat(thisdate,"\n\n")
   cat("there are more detailed reports for specific aspects:\n")
   if (report_dir_web != "") {
-    cat(fn.reportname2,"\n")
-    cat(sim.reportname2,"\n")
-    cat(data.reportname2,"\n")
+    cat(paste0(report_dir_web,model.name,"_filename_issues.txt"),"\n")
+    cat(paste0(report_dir_web,model.name,"_simulations_missing.txt"),"\n")
+    cat(paste0(report_dir_web,model.name,"_data_issues.txt"),"\n")
   } else {
-    cat(fn.reportname,"\n")
-    cat(sim.reportname,"\n")
-    cat(data.reportname,"\n")
+    cat(reportnames$fn,"\n")
+    cat(reportnames$sim,"\n")
+    cat(reportnames$data,"\n")
   }
+  
+  # stop reporting
+  if (save2file) sink()
   
   return(reportnames)
 }
 
 
-do_test.filenames <- function(files, fn.reportname, save2file, thisdate, model.name, ignore) {
+do_test.filenames <- function(files, reportnames, save2file, thisdate, model.name, ignore) {
   
   fname.issues <- list()
   
+  if (save2file) sink(file=reportnames$fn,append=F)
   cat("/*=============================================================================================*/\n")
   cat("/*===================      FILE NAMING ISSUES     =============================================*/\n")
   cat("/*=============================================================================================*/\n")
@@ -471,7 +458,7 @@ do_test.filenames <- function(files, fn.reportname, save2file, thisdate, model.n
   # stop reporting
   if (save2file) sink()
   
-  if (save2file) sink(file=fn.reportname,append=F)
+  if (save2file) sink(file=reportnames$summary,append=F)
   cat("********  GGCMI Phase 3 file check report ********\n\n")
   cat(thisdate,"\n\n")
   if (ignore$years) {
@@ -486,7 +473,7 @@ do_test.filenames <- function(files, fn.reportname, save2file, thisdate, model.n
 }
 
 
-do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sims.reportname, save2file, ignore) {
+do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sim.reportname, save2file, ignore) {
   
   sims <- array(NA,dim=c(length(crops),length(irrigs),length(rcsps),length(socs),length(sens),length(gcms),length(vars)))
   dimnames(sims) <- list(crops,irrigs,rcsps,socs,sens,gcms,vars)
@@ -524,7 +511,7 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sims.
     }
   }
   
-  if (save2file) sink(file=sim.reportname,append=T)
+  if (save2file) sink(file=reportnames$sim,append=T)
   cat("\n\n\n/*=============================================================================================*/\n")
   cat("/*===================      MISSING OUTPUTS        =============================================*/\n")
   cat("/*=============================================================================================*/\n")
@@ -610,17 +597,17 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sims.
                   if(!is.null(mvars))c(1:length(vars))[-mvars] else 1]
     
     if(!all(sims2==1)){
-      cat("incomplete sets:",length(sims2[sims2!=1]),"of",length(sims2),"see",sim.reportname,"for details.\n")
-      if (save2file) sink()
-      if (save2file) sink(file=sim.reportname,append=F)
       cat("incomplete sets:\n")
       sims2[sims2!=1] <- "miss"
       sims2[sims2==1] <- "OK"
       print(sims2)
-      if (save2file) sink()
+      if (save2file) {
+        sink()
+        sink(file=reportnames$summary,append=F)
+      }
+      cat("incomplete sets:",length(sims2[sims2!=1]),"of",length(sims2),"see",reportnames$sim,"for details.\n")
       
     }
-    #c(1:length(crops))[-mcrops]
   } else {
     cat("\nno issues detected\n\n")
   }
@@ -629,19 +616,24 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sims.
 }
 
 
-do_test.files <- function(files, data.reportname, landseamask, save2file, thisdate) {
+do_test.files <- function(files, reportnames, landseamask, save2file, thisdate) {
   
   data.issues <- list()
   
+  if (save2file) sink(file=reportnames$data,append=F)
   cat("\n\n\n/*=============================================================================================*/\n")
   cat("/*===================      DATA RANGE and COVERAGE ISSUES      ================================*/\n")
   cat("/*=============================================================================================*/\n")
+  cat(paste("\nReading", length(files), "files...\n"))
   warnings <- errors <- 0
   error.types <- list("variable issues"=NULL, "number of dimensions"=NULL, "dimension names"=NULL,
                       "dimension definitions"=NULL, "units"=NULL, "data ranges"=NULL,
                       "data coverage"=NULL, "time span"=NULL)
   for(fn in 1:length(files)){
-    cat("Reading", fn, "of", length(files), "(", files[fn], ")\n")
+    
+    cat(paste0(fn, "..."))
+    if (fn%%10 == 0) cat("\n")
+    
     test <- test.file(files[fn], landseamask)
     warnings <- warnings + test$warnings
     errors <- errors + test$errors
@@ -663,6 +655,7 @@ do_test.files <- function(files, data.reportname, landseamask, save2file, thisda
     if(length(collected)>0)
       data.issues[length(data.issues)+1] <- paste0("data range and coverage issues (",test$warnings," warnings; ",test$errors," errors) with ",files[fn],"\n",collected)
   }
+  cat("\n\n")
   if(length(data.issues)>0){
     cat(length(data.issues),"file name issues in ",length(files)," files, with ",warnings,"Warnings and ",errors,"errors.\n\n")
     #indent.switch(indent=4)
@@ -681,10 +674,11 @@ do_test.files <- function(files, data.reportname, landseamask, save2file, thisda
     }
   }
   
-  # stop reporting
-  if (save2file) sink()
-  
-  if (save2file) sink(file=data.reportname,append=F)
+  # switch reporting to summary file
+  if (save2file) {
+    sink()
+    if (save2file) sink(file=reportnames$summary,append=F)
+  }
   cat("********  GGCMI Phase 3 data range and coverage check report ********\n\n")
   cat(thisdate,"\n\n")
   if(length(data.issues)>0){
@@ -693,7 +687,6 @@ do_test.files <- function(files, data.reportname, landseamask, save2file, thisda
     cat("no data range and coverage issues detected.\n")
   }
   if (save2file) sink()
-  stop("stopping")
 }
 
 
