@@ -1,7 +1,7 @@
 require(ncdf4)
 
 save2file <- TRUE
-ignore <- list("years"=TRUE)
+ignore <- list("years"=FALSE)
 
 # Paths
 # path_AgMIP.output <- "/project2/ggcmi/AgMIP.output/"
@@ -30,7 +30,7 @@ source(ggcmi_function_file)
 thisdate <- date()
 
 # Get and change working directory,
-# ensuring that the last character of path_AgMIP.output is /
+# ensuring that the last character of path_AgMIP.output is a slash
 if (substr(path_AgMIP.output, nchar(path_AgMIP.output), nchar(path_AgMIP.output)) != "/") {
   path_AgMIP.output <- paste0(path_AgMIP.output, "/")
 }

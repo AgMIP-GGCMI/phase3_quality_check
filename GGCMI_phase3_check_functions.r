@@ -61,142 +61,285 @@ split_path <- function(path) {
 test.filename <- function(file_path, model.name, ignore){
   # <modelname>_<climate_forcing>_<bias_adjustment>_<climate_scenario>_<soc_scenario>_<sens_scenario>_<variable>-<crop>-<irrigation>_<region>_<timestep>_<start_year>_<end_year>.nc
   ending.f <- mname.f <- climate.f <- bias.f <- scen.f <- soc.f <- sens.f <- var.f <- crop.f <- irrig.f <- region.f <- timestep.f <- 
-    starty.f <- endy.f <- NULL
+    years.f <- NULL
   warnings <- errors <- 0
   
-  # Get filename and directory structure
+  # Get filename and directory
   fn <- basename(file_path)
   dir_path <- dirname(normalizePath(file_path))
-  dir_bits <- split_path(dir_path)
   
   # split up file name into elements
-  # remove .nc parg
   bits <- unlist(strsplit(fn,"[.]"))
-  ending <- bits[2]
-  if(ending != "nc"){
-    ending.f <- paste("  => WARNING: File ending is not '.nc' but",ending,"\n")
-    warnings <- warnings + 1
-  }
-  # split rest of file name string into elements
-  bits <- unlist(strsplit(bits[1],"_"))
-  
-  # Check that filename has correct value for model name
-  if(bits[1]!=tolower(model.name)){
-    if (tolower(bits[1])==tolower(model.name)) {
-      mname.f <- "  => WARNING: <modelname> in filename should be all lowercase\n"
-    } else {
-      mname.f <- paste0("  => WARNING: <modelname> in filename (",bits[1],") does not match value provided in script (",model.name,")\n")
+  ending <- bits[length(bits)]
+  ending_bad <- is.na(ending) | !(ending %in% c("nc", "nc4"))
+  if (ending_bad) {
+    if (is.na(ending)) {
+      ending.f <- "  => Error: File has no extension. Halting check of this filename.\n"
+      errors <- errors + 1
     }
-    warnings <- warnings + 1
-  }
-  
-  # Check that directory structure has correct value for model name
-  if(dir_bits[5]!=tolower(model.name)){
-    if (tolower(dir_bits[5])==tolower(model.name)) {
-      mname.f <- "  => WARNING: <modelname> in directory structure should be all lowercase\n"
-    } else {
-      mname.f <- paste("  => WARNING: directory that should be", model.name, "in directory structure is instead", dir_bits[5], "\n")
+    else if (!(ending %in% c("nc", "nc4"))) {
+      ending.f <- paste0("  => Error: File extension '.", ending, "' instead of '.nc'. Halting check of this filename.\n")
+      errors <- errors + 1
     }
-    warnings <- warnings + 1
-  }
-  
-  # Check that filename has correct value for <climate_forcing>
-  if(!(bits[2]%in%tolower(gcms))){
-    if (tolower(bits[2])%in%tolower(gcms)) {
-      climate.f <- "  => WARNING: <climate_forcing> in filename should be all lowercase\n"
-      warnings <- warnings + 1
-    } else {
-      climate.f <- paste("  => ERROR:", bits[2], "not in set of GCMs\n")
+    else {
+      ending.f <- "  => Error: Problem parsing extension. Halting check of this filename.\n"
       errors <- errors + 1
     }
   }
-  
-  # Check that directory structure has correct value for <climate_forcing>
-  if(!(dir_bits[3]%in%tolower(gcms))){
-    if (tolower(dir_bits[3])%in%tolower(gcms)) {
-      mname.f <- "  => WARNING: <climate_forcing> in directory structure should be all lowercase\n"
-    } else {
-      mname.f <- paste0("  => WARNING: <climate_forcing> directory name (", dir_bits[3], ")not in set of GCMs\n")
-    }
-    warnings <- warnings + 1
-  }
-  
-  # Check that bias adjustment string is correct
-  if(bits[3]!="w5e5"){
-    bias.f <- paste("  => ERROR: bias_adjustment string",bits[3],"not 'w5e5'\n")
-    errors <- errors + 1 
-  }
-  
-  # Check that SSP/RCP scenario is valid
-  if(!(bits[4]%in%rcsps)){
-    soc.f <- paste("  => ERROR: SSP/RCP scenario",bits[4],"not in set of scenarios",rcsps,"\n")
-    errors <- errors + 1
-  }
-  
-  # Check that socioeconomic scenario is valid
-  if(!(bits[5]%in%tolower(socs))){
-    soc.f <- paste("  => ERROR: soc scenario",bits[5],"not in set of soc scenarios\n")
-    errors <- errors + 1
-  }
-  
-  # Check that sensitivity scenario is valid
-  if(!(bits[6]%in%tolower(sens))){
-    sens.f <- paste("  => ERROR: sens scenario",bits[6],"not in set of soc scenarios\n")
-    errors <- errors + 1
-  }
-  
-  # Get and check variable in filename
-  bits2 <- unlist(strsplit(bits[7],"-"))
-  if(length(bits2)!=3){
-    var.f <- paste("  => ERROR: wrong number of elements in variable string:",bits[7],"\n")
-    errors <- errors + 1
-  }
-  else{
-    if(!(bits2[1]%in%vars)){
-      var.f <- paste("  => ERROR: variable",bits2[1],"not in set of variables\n")
-      errors <- errors + 1
-    }
-    if(!(bits2[2]%in%crops)){
-      crops.f <- paste("  => WARNING: variable",bits2[2],"not in set of crops\n")
+  else {
+    if (length(bits) > 2) {
+      ending.f <- "  => WARNING: Filename has multiple periods; it should just have one (*.nc)\n"
       warnings <- warnings + 1
     }
-    if(!(bits2[3]%in%irrigs)){
-      irrig.f <- paste("  => WARNING: variable",bits2[2],"not in set of crops\n")
+    if (ending == "nc4") {
+      ending.f <- paste(ending.f, "  => WARNING: File extension should be '.nc', not '.nc4'\n")
       warnings <- warnings + 1
     }
-  }
-  
-  # Check that area coverage element is correct
-  if(!(bits[8]=="global")){
-    region.f <- paste("  => ERROR: region",bits[8],"not 'global'\n")
-    errors <- errors + 1
-  }
-  
-  # Check that temporal resolution element is correct
-  if(!(bits[9]=="annual")){
-    timestep.f <- paste("  => ERROR: timestep",bits[9],"not 'annual'\n")
-    errors <- errors + 1
-  }
-  
-  # Check that time span is correct
-  if (!ignore$years) {
-    scenario <- bits[4]
-    is_future <- scenario%in%rcsps[-c(1,2)]
-    startyear <- bits[10]
-    endyear <- bits[11]
-    if(!((!is_future & startyear==1850) | (is_future & startyear==2015))){
-      starty.f <- paste("  => ERROR: startyear",startyear,"not compatible with scenario",scenario,"\n")
+    
+    # split rest of file name string into elements
+    bits <- unlist(strsplit(bits[1],"_"))
+    bit_model <- bits[1]
+    bit_gcm <- bits[2]
+    bit_bc <- bits[3]
+    bit_scen <- bits[4]
+    bit_soc <- bits[5]
+    bit_sens <- bits[6]
+    fn_var <- bits[7]
+    bit_region <- bits[8]
+    bit_timestep <- bits[9]
+    
+    # Get directory structure
+    dir_bits <- split_path(dir_path)
+    dir_bit_gcm <- dir_bits[3]
+    dir_bit_model <- dir_bits[5]
+    
+    # Check that filename has correct value for <modelname>
+    if (is.na(bit_model)) {
+      mname.f <- "  => WARNING: Failed to parse <modelname> from filename\n"
+      warnings <- warnings + 1
+    }
+    else if (bit_model != tolower(model.name)) {
+      if (tolower(bit_model) == tolower(model.name)) {
+        mname.f <- "  => WARNING: <modelname> in filename should be all lowercase\n"
+      } 
+      else {
+        mname.f <- paste0("  => WARNING: <modelname> in filename (", bit_model,
+                          ") does not match value provided in script (", model.name,")\n")
+      }
+      warnings <- warnings + 1
+    }
+    
+    # Check that directory structure has correct value for <modelname>
+    if (is.na(dir_bit_model)) {
+      mname.f <- paste(mname.f, "  => WARNING: Failed to find <modelname> in directory structure\n")
+    }
+    else if (dir_bit_model != tolower(model.name)) {
+      if (tolower(dir_bit_model) == tolower(model.name)) {
+        mname.f <- paste(mname.f, "  => WARNING: <modelname> in directory structure should be all lowercase\n")
+      } else {
+        mname.f <- paste0(mname.f, "  => WARNING: directory that should be '", model.name, 
+                         "' is instead '", dir_bit_model, "'\n")
+      }
+      warnings <- warnings + 1
+    }
+    
+    # Check that filename has correct value for <climate_forcing>
+    if (is.na(bit_gcm)) {
+      climate.f <- "  => ERROR: Failed to parse <climate_forcing> from filename\n"
       errors <- errors + 1
     }
-    if(!((scenario==rcsps[2] & endyear==2014) | (scenario%in%rcsps[-2] & endyear==2100))){
-      endy.f <- paste("  => ERROR: endyear",endyear,"not compatible with scenario",scenario,"\n")
+    else if (!(bit_gcm %in% tolower(gcms))) {
+      if (tolower(bit_gcm) %in% tolower(gcms)) {
+        climate.f <- "  => WARNING: <climate_forcing> in filename should be all lowercase\n"
+        warnings <- warnings + 1
+      } else {
+        climate.f <- paste("  => ERROR:", bit_gcm, "not in set of GCMs\n")
+        errors <- errors + 1
+      }
+    }
+    
+    # Check that directory structure has correct value for <climate_forcing>
+    if (is.na(dir_bit_gcm)) {
+      climate.f <- paste(climate.f, "  => WARNING: Failed to find <climate_forcing> in directory structure\n")
+    }
+    else if (dir_bit_gcm != tolower(bit_gcm)) {
+      if (tolower(dir_bit_gcm) == tolower(bit_gcm)) {
+        climate.f <- paste0(climate.f, "   => WARNING: <climate_forcing> in directory structure should be all lowercase\n")
+      } else {
+        climate.f <- paste0(climate.f, "   => WARNING: directory that should be '", bit_gcm, 
+                          "' is instead '", dir_bit_gcm, "'\n")
+      }
+      warnings <- warnings + 1
+    }
+    
+    # Check that bias adjustment string in the filename is correct
+    if (is.na(bit_bc)) {
+      bias.f <- "  => ERROR: Failed to parse <bias_adjustment> from filename\n"
       errors <- errors + 1
+    }
+    else if(bit_bc != "w5e5"){
+      if (tolower(bit_bc) != "w5e5") {
+        bias.f <- "  => WARNING: <bias_adjustment> in filename should be all lowercase\n"
+        warnings <- warnings + 1
+      } else {
+        bias.f <- paste("  => ERROR: bias_adjustment string in filename is", bit_bc, "not 'w5e5'\n")
+        errors <- errors + 1
+      }
+    }
+    
+    # Check that SSP/RCP scenario is valid
+    # TODO: Allows for uppercase in scenario token... should it?
+    if (is.na(bit_scen)) {
+      scen.f <- "  => ERROR: Failed to parse <climate_scenario> from filename\n"
+      errors <- errors + 1
+    }
+    else if(!(bit_scen %in% rcsps)){
+      scen.f <- paste("  => ERROR:", bit_scen, "not in set of SSP/RCP scenarios\n")
+      errors <- errors + 1
+    }
+    
+    # Check that socioeconomic scenario is valid
+    if (is.na(bit_soc)) {
+      soc.f <- "  => ERROR: Failed to parse <soc_scenario> from filename\n"
+      errors <- errors + 1
+    }
+    else if(!(bit_soc %in% tolower(socs))){
+      if (tolower(bit_soc) %in% tolower(socs)) {
+        soc.f <- "  => WARNING: <soc_scenario> in filename should be all lowercase\n"
+        warnings <- warnings + 1
+      } else {
+        soc.f <- paste("  => ERROR:", bit_soc, "not in set of socioeconomic scenarios\n")
+        errors <- errors + 1
+      }
+    }
+    
+    # Check that sensitivity scenario is valid
+    if (is.na(bit_sens)) {
+      sens.f <- "  => ERROR: Failed to parse <soc_scenario> from filename\n"
+      errors <- errors + 1
+    }
+    else if(!(bit_sens %in% tolower(sens))){
+      if (tolower(bit_sens) %in% tolower(sens)) {
+        sens.f <- "  => WARNING: <sens_scenario> in filename should be all lowercase\n"
+        warnings <- warnings + 1
+      } else {
+        sens.f <- paste("  => ERROR:", bit_sens, "not in set of sensitivity scenarios\n")
+        errors <- errors + 1
+      }
+    }
+    
+    # Get and check variable in filename
+    bits_varcropirr <- unlist(strsplit(fn_var,"-"))
+    bit_var <- bits_varcropirr[1]
+    bit_crop <- bits_varcropirr[2]
+    bit_irr <- bits_varcropirr[3]
+    if (length(bits_varcropirr) != 3) {
+      var.f <- paste("  => ERROR: wrong number of elements in variable string",fn_var,"\n")
+      errors <- errors + 1
+    }
+    else{
+      # TODO: Why is this an error for variable but a warning for the other two strings?
+      if (!(bit_var %in% vars)) {
+        var.f <- paste("  => ERROR:", bit_var, "not in set of variables\n")
+        errors <- errors + 1
+      }
+      if (!(bit_crop %in% crops)) {
+        crop.f <- paste("  => WARNING:", bit_crop, "not in set of crops\n")
+        warnings <- warnings + 1
+      }
+      if (!(bit_irr %in% irrigs)) {
+        irrig.f <- paste("  => WARNING:", bit_irr, "not in set of irrigations\n")
+        warnings <- warnings + 1
+      }
+    }
+    
+    # Check that area coverage element is correct
+    if (is.na(bit_region)) {
+      region.f <- "  => ERROR: Failed to parse <region> from filename\n"
+      errors <- errors + 1
+    }
+    else if (bit_region != "global"){
+      region.f <- paste0("  => ERROR: region is '", bit_region, "' instead of 'global'\n")
+      errors <- errors + 1
+    }
+    
+    # Check that temporal resolution element is correct
+    if (is.na(bit_timestep)) {
+      timestep.f <- "  => ERROR: Failed to parse <timestep> from filename\n"
+      errors <- errors + 1
+    }
+    else if (bit_timestep != "annual"){
+      timestep.f <- paste0("  => ERROR: timestep is '", bit_timestep, "' instead of 'annual'\n")
+      errors <- errors + 1
+    }
+    
+    # Check that time span is correct
+    if (!ignore$years) {
+      if (is.na(bit_scen)) {
+        years.f <- "  => ERROR: Can't check time span: Failed to parse RCP/SSP scenario from filename\n"
+        errors <- errors + 1
+      }
+      else {
+        if (!(bit_scen %in% rcsps)) {
+          years.f <- "  => ERROR: Can't check time span: parsed RCP/SSP scenario not in list provided\n"
+          errors <- errors + 1
+        }
+        else {
+          startyear <- bits[10]
+          endyear <- bits[11]
+          if (is.na(startyear) | is.na(endyear)) {
+            years.f <- "  => ERROR: Can't check time span: Failed to parse years from filename\n"
+            errors <- errors + 1
+          }
+          else {
+            
+            # Get target start year
+            if (bit_scen %in% c("picontrol", "historical")) {
+              target_startyear <- 1850
+            }
+            else if (bit_scen %in% c("ssp126", "ssp585")) {
+              target_startyear <- 2015
+            } else {
+              target_startyear <- NA
+            }
+            
+            # Get target end year
+            if (bit_scen %in% c("historical")) {
+              target_endyear <- 2014
+            }
+            else if (bit_scen %in% c("picontrol", "ssp126", "ssp585")) {
+              target_endyear <- 2100
+            } else {
+              target_endyear <- NA
+            }
+            
+            # Check time span
+            if (is.na(target_startyear) | is.na(target_endyear)) {
+              years.f <- paste("  => ERROR: Can't check time span: Target start and/or end year(s) not provided", 
+                               "for RCP/SSP scenario", bit_scen, "\n")
+              errors <- errors + 1
+            }
+            else {
+              if (startyear != target_startyear){
+                years.f <- paste0("  => ERROR: startyear ", startyear, " not compatible with RCP/SSP scenario ", bit_scen,
+                                  " (should be ", target_startyear, ")\n")
+                errors <- errors + 1
+              }
+              if (endyear != target_endyear){
+                years.f <- paste0(years.f, "  => ERROR: endyear ", endyear, " not compatible with RCP/SSP scenario ", bit_scen,
+                                  " (should be ", target_endyear, ")\n")
+                errors <- errors + 1
+              }
+            }
+          }
+        }
+      }
     }
   }
   
   # Save result
   list(ending.f=ending.f,mname.f=mname.f,climate.f=climate.f,bias.f=bias.f,scen.f=scen.f,soc.f=soc.f,sens.f=sens.f,
-       var.f=var.f,crop.f=crop.f,irrig.f=irrig.f,region.f=region.f,timestep.f=timestep.f,starty.f=starty.f,endy.f=endy.f,
+       var.f=var.f,crop.f=crop.f,irrig.f=irrig.f,region.f=region.f,timestep.f=timestep.f,years.f=years.f,
        warnings=warnings,errors=errors)
 }
 
@@ -408,7 +551,7 @@ do_test.filenames <- function(files, reportnames, save2file, thisdate, model.nam
   error.types <- list("wrong file ending"=NULL,"inconsistent model/folder name"=NULL,"wrong GCM for climate"=NULL,
                       "unknown scenario"=NULL,"unknown soc setting"=NULL,"unknown sensitivty setting"=NULL,
                       "wrong variable"=NULL,"unknown crop"=NULL,"wrong irrigation setting"=NULL,
-                      "wrong region"=NULL,"wrong time step"=NULL,"wrong start year"=NULL,"wrong end year"=NULL,"wrong bias adjustment"=NULL)
+                      "wrong region"=NULL,"wrong time step"=NULL,"wrong years"=NULL,"wrong bias adjustment"=NULL)
   for(fn in 1:length(files)){
     test <- test.filename(files[fn], model.name, ignore)
     warnings <- warnings + test$warnings
@@ -424,16 +567,15 @@ do_test.filenames <- function(files, reportnames, save2file, thisdate, model.nam
     if(!is.null(test$irrig.f)) error.types[[9]] <- c(error.types[[9]],fn)
     if(!is.null(test$region.f)) error.types[[10]] <- c(error.types[[10]],fn)
     if(!is.null(test$timestep.f)) error.types[[11]] <- c(error.types[[11]],fn)
-    if(!is.null(test$starty.f)) error.types[[12]] <- c(error.types[[12]],fn)
-    if(!is.null(test$endy.f)) error.types[[13]] <- c(error.types[[13]],fn)
-    if(!is.null(test$bias.f)) error.types[[14]] <- c(error.types[[14]],fn)
+    if(!is.null(test$years.f)) error.types[[12]] <- c(error.types[[12]],fn)
+    if(!is.null(test$bias.f)) error.types[[13]] <- c(error.types[[13]],fn)
     collected <- paste0(if(!is.null(test$ending.f))test$ending.f,if(!is.null(test$mname.f))test$mname.f,
                         if(!is.null(test$climate.f))test$climate.f,if(!is.null(test$bias.f))test$bias.f,
                         if(!is.null(test$scen.f))test$scen.f,if(!is.null(test$soc.f))test$soc.f,
                         if(!is.null(test$sens.f))test$sens.f,if(!is.null(test$var.f))test$var.f,
                         if(!is.null(test$crop.f))test$crop.f,if(!is.null(test$irrig.f))test$irrig.f,
                         if(!is.null(test$region.f))test$region.f,if(!is.null(test$timestep.f))test$timestep.f,
-                        if(!is.null(test$starty.f))test$starty.f,if(!is.null(test$endy.f))test$endy.f)
+                        if(!is.null(test$years.f))test$years.f)
     if(length(collected)>0)
       fname.issues[length(fname.issues)+1] <- paste0("file naming issues (",test$warnings," warnings; ",test$errors," errors) with ",files[fn],"\n",collected)
   }
