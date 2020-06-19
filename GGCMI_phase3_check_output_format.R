@@ -61,7 +61,8 @@ do_test.file_set(crops, irrigs, rcsps, socs, sens, gcms, vars, reportnames, save
 
 
 ##############################################
-# Test file contents
+# Test file contents (only netCDFs)
 ##############################################
+files <- dir(pattern = "*.nc|*.nc4", recursive=TRUE, include.dirs=FALSE)
 do_test.files(files, reportnames, landseamask, save2file, thisdate)
 
