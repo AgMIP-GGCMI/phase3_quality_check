@@ -1,3 +1,5 @@
+failvalue <- -1
+
 ranges <- list("yield" = c(0,100),
                "biom" = c(0,100),
                "cnyield" = c(0,100),
@@ -528,9 +530,9 @@ test.file <- function(fn, landseamask){
     }
     
     # Check for valid values
-    if(min(data.r) < ranges[[index]][1] | max(data.r) > ranges[[index]][2]){
-      range.f <- paste(range.f,"  => WARNING: data points (range:",paste(data.r,collapse=" "),") outside valid range",
-                       paste(ranges[[index]],collapse=" "),"\n")
+    if(min(data.r[data.r!=failvalue]) < ranges[[index]][1] | max(data.r[data.r!=failvalue]) > ranges[[index]][2]){
+      range.f <- paste(range.f, "  => WARNING: data points (range:",paste(data.r[data.r!=failvalue],collapse=" "),
+                       ") outside valid range", paste(ranges[[index]],collapse=" "), "\n")
       warnings <- warnings + 1
     }
     
