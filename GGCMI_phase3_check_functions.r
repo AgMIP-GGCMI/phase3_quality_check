@@ -344,7 +344,7 @@ test.filename <- function(file_path, model.name, ignore){
 }
 
 test.file <- function(fn, landseamask){
-  var.f <- ndim.f <- dimname.f <- dimdef.f <- units.f <- range.f <- cover.f <- timespan.f <- NULL  
+  var.f <- ndim.f <- dimname.f <- dimdef.f <- units.f <- range.f <- cover.f <- timespan.f <- missval.f <- NULL  
   warnings <- errors <- 0
 
   bits <- unlist(strsplit(fn,"[.]"))
@@ -370,10 +370,10 @@ test.file <- function(fn, landseamask){
     }
     if(nc$var[[1]]$missval!=1e20){
       if (abs(nc$var[[1]]$missval*1e-20 - 1) < 1e-6) {
-        range.f <- paste0(range.f,"   => WARNING: R reads missing value as '",nc$var[[1]]$missval,"' instead of '1e20'.\n")
+        missval.f <- paste0(range.f,"   => WARNING: R reads missing value as '",nc$var[[1]]$missval,"' instead of '1e20'.\n")
         warnings <- warnings + 1
       } else {
-        range.f <- paste0(range.f,"   => ERROR: missing value incorrectly defined as '",nc$var[[1]]$missval,"' instead of '1e20'\n")
+        missval.f <- paste0(range.f,"   => ERROR: missing value incorrectly defined as '",nc$var[[1]]$missval,"' instead of '1e20'\n")
         errors <- errors + 1
       }
     }
@@ -498,7 +498,7 @@ test.file <- function(fn, landseamask){
   }
 
   list(var.f=var.f, ndim.f=ndim.f, dimname.f=dimname.f, dimdef.f=dimdef.f, units.f=units.f,
-       range.f=range.f, cover.f=cover.f, timespan.f=timespan.f, warnings=warnings, errors=errors)
+       range.f=range.f, cover.f=cover.f, timespan.f=timespan.f, missval.f=missval.f, warnings=warnings, errors=errors)
 }
 
 
@@ -770,7 +770,7 @@ do_test.files <- function(files, reportnames, landseamask, save2file, thisdate) 
   warnings <- errors <- 0
   error.types <- list("variable issues"=NULL, "number of dimensions"=NULL, "dimension names"=NULL,
                       "dimension definitions"=NULL, "units"=NULL, "data ranges"=NULL,
-                      "data coverage"=NULL, "time span"=NULL)
+                      "data coverage"=NULL, "time span"=NULL, "missing value"=NULL)
   for(fn in 1:length(files)){
     
     cat(paste0(fn, "..."))
@@ -787,6 +787,7 @@ do_test.files <- function(files, reportnames, landseamask, save2file, thisdate) 
     if(!is.null(test$range.f)) error.types[[6]] <- c(error.types[[6]],fn)
     if(!is.null(test$cover.f)) error.types[[7]] <- c(error.types[[7]],fn)
     if(!is.null(test$timespan.f)) error.types[[8]] <- c(error.types[[8]],fn)
+    if(!is.null(test$missval.f)) error.types[[9]] <- c(error.types[[9]],fn)
     
     collected <- paste0(if(!is.null(test$var.f))test$var.f,
                         if(!is.null(test$ndim.f))test$ndim.f,
@@ -795,7 +796,8 @@ do_test.files <- function(files, reportnames, landseamask, save2file, thisdate) 
                         if(!is.null(test$units.f))test$units.f,
                         if(!is.null(test$range.f))test$range.f,
                         if(!is.null(test$cover.f))test$cover.f,
-                        if(!is.null(test$timespan.f))test$timespan.f)
+                        if(!is.null(test$timespan.f))test$timespan.f,
+                        if(!is.null(test$missval.f))test$missval.f)
     if(length(collected)>0)
       data.issues[length(data.issues)+1] <- paste0("data range and coverage issues (",test$warnings," warnings; ",test$errors," errors) with ",files[fn],"\n",collected)
   }
