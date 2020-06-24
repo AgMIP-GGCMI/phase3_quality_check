@@ -782,14 +782,16 @@ do_test.files <- function(files, reportnames, landseamask, save2file, thisdate) 
     if(!is.null(test$var.f)) error.types[[1]] <- c(error.types[[1]],fn)
     if(!is.null(test$ndim.f)) error.types[[2]] <- c(error.types[[2]],fn)
     if(!is.null(test$dimname.f)) error.types[[3]] <- c(error.types[[3]],fn)
-    if(!is.null(test$units.f)) error.types[[4]] <- c(error.types[[4]],fn)
-    if(!is.null(test$range.f)) error.types[[5]] <- c(error.types[[5]],fn)
-    if(!is.null(test$cover.f)) error.types[[6]] <- c(error.types[[6]],fn)
-    if(!is.null(test$timespan.f)) error.types[[7]] <- c(error.types[[7]],fn)
+    if(!is.null(test$dimdef.f)) error.types[[4]] <- c(error.types[[4]],fn)
+    if(!is.null(test$units.f)) error.types[[5]] <- c(error.types[[5]],fn)
+    if(!is.null(test$range.f)) error.types[[6]] <- c(error.types[[6]],fn)
+    if(!is.null(test$cover.f)) error.types[[7]] <- c(error.types[[7]],fn)
+    if(!is.null(test$timespan.f)) error.types[[8]] <- c(error.types[[8]],fn)
     
     collected <- paste0(if(!is.null(test$var.f))test$var.f,
                         if(!is.null(test$ndim.f))test$ndim.f,
                         if(!is.null(test$dimname.f))test$dimname.f,
+                        if(!is.null(test$dimdef.f))test$dimdef.f,
                         if(!is.null(test$units.f))test$units.f,
                         if(!is.null(test$range.f))test$range.f,
                         if(!is.null(test$cover.f))test$cover.f,
