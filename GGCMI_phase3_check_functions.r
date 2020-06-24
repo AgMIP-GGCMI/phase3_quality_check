@@ -766,6 +766,7 @@ do_test.files <- function(files, reportnames, landseamask, save2file, thisdate) 
   cat("\n\n\n/*=============================================================================================*/\n")
   cat("/*===================      DATA RANGE and COVERAGE ISSUES      ================================*/\n")
   cat("/*=============================================================================================*/\n")
+  cat("\n\n", thisdate, "\n\n")
   cat(paste("\nReading", length(files), "files...\n"))
   warnings <- errors <- 0
   error.types <- list("variable issues"=NULL, "number of dimensions"=NULL, "dimension names"=NULL,
@@ -801,9 +802,24 @@ do_test.files <- function(files, reportnames, landseamask, save2file, thisdate) 
     if(length(collected)>0)
       data.issues[length(data.issues)+1] <- paste0("data range and coverage issues (",test$warnings," warnings; ",test$errors," errors) with ",files[fn],"\n",collected)
   }
+  
+  # Print messages for every netCDF to detailed output file
   cat("\n\n")
   if(length(data.issues)>0){
-    cat(length(data.issues),"file name issues in ",length(files)," files, with ",warnings,"Warnings and ",errors,"errors.\n\n")
+    cat(unlist(data.issues),sep="\n")
+  } else {
+    cat("no data range or coverage issues detected.\n")
+  }
+  
+  # Print selection to summary file
+  if (save2file) {
+    sink()
+    if (save2file) sink(file=reportnames$summary,append=F)
+  }
+  cat("********  GGCMI Phase 3 data range and coverage check report ********\n\n")
+  cat("\n\n")
+  if(length(data.issues)>0){
+    cat(length(data.issues),"data issues in ",length(files)," files, with ",warnings,"Warnings and ",errors,"errors.\n\n")
     #indent.switch(indent=4)
     cat(data.issues[[1]],sep="\n")  
     if(length(data.issues)>2)
@@ -818,19 +834,8 @@ do_test.files <- function(files, reportnames, landseamask, save2file, thisdate) 
         counter <- counter +1 
       }
     }
-  }
-  
-  # switch reporting to summary file
-  if (save2file) {
-    sink()
-    if (save2file) sink(file=reportnames$summary,append=F)
-  }
-  cat("********  GGCMI Phase 3 data range and coverage check report ********\n\n")
-  cat(thisdate,"\n\n")
-  if(length(data.issues)>0){
-    cat(unlist(data.issues),sep="\n")
   } else {
-    cat("no data range and coverage issues detected.\n")
+    cat("no data range or coverage issues detected.\n")
   }
   if (save2file) sink()
 }
