@@ -1,7 +1,25 @@
-ranges <- list("yield"=c(0,100),"biom"=c(0,100),"cnyield"=c(0,100),"plantday"=c(0,365),"plantyear"=c(1850,2100),"anthday"=c(0,365),"matyday"=c(0,365),
-              "pirrww"=c(0,1e6),"aet"=c(0,1e6),"soilmoist1m"=c(0,1e6),"transp"=c(0,1e6),
-              "evap"=c(0,1e6),"runoff"=c(0,1e6),"rootm"=c(0,100),"tnrup"=c(0,1e4),"tnrin"=c(0,1e4),"tnrloss"=c(0,1e4),"n2oemis"=c(0,1e4),"n2emis"=c(0,1e4),
-              "nleach"=c(0,1e4),"tcemis"=c(0,1e4),"ch4emis"=c(0,1e4))
+ranges <- list("yield" = c(0,100),
+               "biom" = c(0,100),
+               "cnyield" = c(0,100),
+               "plantday" = c(0,365),
+               "plantyear" = c(1850,2100),
+               "anthday" = c(0,365),
+               "matyday" = c(0,365),
+               "pirrww" = c(0,1e6),
+               "aet" = c(0,1e6),
+               "soilmoist1m" = c(0,1e6),
+               "transp" = c(0,1e6),
+               "evap" = c(0,1e6),
+               "runoff" = c(0,1e6),
+               "rootm" = c(0,100),
+               "tnrup" = c(0,1e4),
+               "tnrin" = c(0,1e4),
+               "tnrloss" = c(0,1e4),
+               "n2oemis" = c(0,1e4),
+               "n2emis" = c(0,1e4),
+               "nleach" = c(0,1e4),
+               "tcemis" = c(0,1e4),
+               "ch4emis" = c(0,1e4))
               
 readmask.nc <- function(filename,lo="lon",la="lat"){
   nc <- nc_open(filename)
@@ -338,9 +356,21 @@ test.filename <- function(file_path, model.name, ignore){
   }
   
   # Save result
-  list(ending.f=ending.f,mname.f=mname.f,climate.f=climate.f,bias.f=bias.f,scen.f=scen.f,soc.f=soc.f,sens.f=sens.f,
-       var.f=var.f,crop.f=crop.f,irrig.f=irrig.f,region.f=region.f,timestep.f=timestep.f,years.f=years.f,
-       warnings=warnings,errors=errors)
+  list(ending.f = ending.f,
+       mname.f = mname.f,
+       climate.f = climate.f,
+       bias.f = bias.f,
+       scen.f = scen.f,
+       soc.f = soc.f,
+       sens.f = sens.f,
+       var.f = var.f,
+       crop.f = crop.f,
+       irrig.f = irrig.f,
+       region.f = region.f,
+       timestep.f = timestep.f,
+       years.f = years.f,
+       warnings = warnings,
+       errors = errors)
 }
 
 test.file <- function(fn, landseamask){
@@ -365,7 +395,8 @@ test.file <- function(fn, landseamask){
       errors <- errors + 1
     }
     if(nc$var[[1]]$units!=target_units(var)){
-      units.f <- paste0(units.f,"  => ERROR: variable units incorrectly defined as '",nc$var[[1]]$units,"' instead of '",target_units(var),"'\n")
+      units.f <- paste0(units.f,"  => ERROR: variable units incorrectly defined as '",nc$var[[1]]$units,
+                        "' instead of '",target_units(var),"'\n")
       errors <- errors + 1
     }
     if(nc$var[[1]]$missval!=1e20){
@@ -373,7 +404,8 @@ test.file <- function(fn, landseamask){
         missval.f <- paste0(range.f,"   => WARNING: R reads missing value as '",nc$var[[1]]$missval,"' instead of '1e20'.\n")
         warnings <- warnings + 1
       } else {
-        missval.f <- paste0(range.f,"   => ERROR: missing value incorrectly defined as '",nc$var[[1]]$missval,"' instead of '1e20'\n")
+        missval.f <- paste0(range.f,"   => ERROR: missing value incorrectly defined as '",nc$var[[1]]$missval,
+                            "' instead of '1e20'\n")
         errors <- errors + 1
       }
     }
@@ -395,7 +427,8 @@ test.file <- function(fn, landseamask){
     } else {
       lat <- ncvar_get(nc,"lat")
       if(!all(lat==landseamask$lat)){
-        dimdef.f <- paste(dimdef.f,"  => ERROR: latitude dimension is incorrectly defined, ranging from",lat[1],"to",lat[length(lat)],"by",lat[2]-lat[1],"\n")
+        dimdef.f <- paste(dimdef.f,"  => ERROR: latitude dimension is incorrectly defined, ranging from",lat[1],"to",
+                          lat[length(lat)],"by",lat[2]-lat[1],"\n")
         errors <- errors + 1
       }
       if(nc$dim$lat$units!="degrees_north"){
@@ -411,7 +444,8 @@ test.file <- function(fn, landseamask){
     } else {
       lon <- ncvar_get(nc,"lon")
       if(!all(lon==landseamask$lon)){
-        dimdef.f <- paste(dimdef.f,"  => ERROR: longitude dimension is incorrectly defined, ranging from",lon[1],"to",lon[length(lon)],"by",lon[2]-lon[1],"\n")
+        dimdef.f <- paste(dimdef.f,"  => ERROR: longitude dimension is incorrectly defined, ranging from",lon[1],"to",
+                          lon[length(lon)],"by",lon[2]-lon[1],"\n")
         errors <- errors + 1
       }
       if(nc$dim$lon$units!="degrees_east"){
@@ -427,7 +461,8 @@ test.file <- function(fn, landseamask){
     } else {
       time <- ncvar_get(nc,"time")
       if(!all(lat==landseamask$lat)){
-        dimdef.f <- paste(dimdef.f,"  => ERROR: latitude dimension is incorrectly defined, ranging from",lat[1],"to",lat[length(lat)],"by",lat[2]-lat[1],"\n")
+        dimdef.f <- paste(dimdef.f,"  => ERROR: latitude dimension is incorrectly defined, ranging from",lat[1],"to",
+                          lat[length(lat)],"by",lat[2]-lat[1],"\n")
         errors <- errors + 1
       }
       if (unlist(strsplit(var, "-"))[1] == "soilmoist1m") {
@@ -436,7 +471,8 @@ test.file <- function(fn, landseamask){
         since_units <- "growing seasons"
       }
       if(nc$dim$time$units!="growing seasons since 1850-01-01 00:00:00"){
-        dimdef.f <- paste0(dimdef.f,"  => ERROR: time units incorrectly defined as '",nc$dim$time$units,"' instead of '",since_units," since 1850-01-01 00:00:00'\n")
+        dimdef.f <- paste0(dimdef.f,"  => ERROR: time units incorrectly defined as '",nc$dim$time$units,"' instead of '",
+                           since_units," since 1850-01-01 00:00:00'\n")
         errors <- errors + 1
       }
     }
@@ -453,7 +489,8 @@ test.file <- function(fn, landseamask){
       }
       Ntimesteps <- dim(ncvar_get(nc,"time"))
       if (Ntimesteps != Ntimesteps_target) {
-        timespan.f <- paste0(timespan.f,"  => ERROR: time dimension has size ", Ntimesteps, " instead of ", Ntimesteps_target, " expected based on filename\n")
+        timespan.f <- paste0(timespan.f,"  => ERROR: time dimension has size ", Ntimesteps, " instead of ", Ntimesteps_target, 
+                             " expected based on filename\n")
         errors <- errors + 1
       }
     }
@@ -470,25 +507,30 @@ test.file <- function(fn, landseamask){
     
     # Check for match to land/ocean mask
     if(!all(is.finite(test1[landseamask$mask==1]))){
-      cover.f <- paste(cover.f,"  => WARNING: not all land with valid values in first time step (",length(which(is.finite(test1[landseamask$mask==1]))),"of",length(which(landseamask$mask==1)),")\n")
+      cover.f <- paste(cover.f,"  => WARNING: not all land with valid values in first time step (",
+                       length(which(is.finite(test1[landseamask$mask==1]))),"of",length(which(landseamask$mask==1)),")\n")
       warnings <- warnings + 1
     }
     if(!all(!is.finite(test1[landseamask$mask==0]))){
-      cover.f <- paste(cover.f,"  => ERROR: not all ocean with invalid values in first time step (",length(which(!is.finite(test1[landseamask$mask==0]))),"of",length(which(landseamask$mask==0)),")\n")
+      cover.f <- paste(cover.f,"  => ERROR: not all ocean with invalid values in first time step (",
+                       length(which(!is.finite(test1[landseamask$mask==0]))),"of",length(which(landseamask$mask==0)),")\n")
       errors <- errors + 1
     }
     if(!all(is.finite(test2[landseamask$mask==1]))){
-      cover.f <- paste(cover.f,"  => WARNING: not all land with valid values in last time step (",length(which(is.finite(test2[landseamask$mask==1]))),"of",length(which(landseamask$mask==1)),")\n")
+      cover.f <- paste(cover.f,"  => WARNING: not all land with valid values in last time step (",
+                       length(which(is.finite(test2[landseamask$mask==1]))),"of",length(which(landseamask$mask==1)),")\n")
       warnings <- warnings + 1
     }
     if(!all(!is.finite(test2[landseamask$mask==0]))){
-      cover.f <- paste(cover.f,"  => ERROR: not all ocean with invalid values in last time step (",length(which(!is.finite(test2[landseamask$mask==0]))),"of",length(which(landseamask$mask==0)),")\n")
+      cover.f <- paste(cover.f,"  => ERROR: not all ocean with invalid values in last time step (",
+                       length(which(!is.finite(test2[landseamask$mask==0]))),"of",length(which(landseamask$mask==0)),")\n")
       errors <- errors + 1
     }
     
     # Check for valid values
     if(min(data.r) < ranges[[index]][1] | max(data.r) > ranges[[index]][2]){
-      range.f <- paste(range.f,"  => WARNING: data points (range:",paste(data.r,collapse=" "),") outside valid range",paste(ranges[[index]],collapse=" "),"\n")
+      range.f <- paste(range.f,"  => WARNING: data points (range:",paste(data.r,collapse=" "),") outside valid range",
+                       paste(ranges[[index]],collapse=" "),"\n")
       warnings <- warnings + 1
     }
     
@@ -497,8 +539,17 @@ test.file <- function(fn, landseamask){
     errors <- errors + 1
   }
 
-  list(var.f=var.f, ndim.f=ndim.f, dimname.f=dimname.f, dimdef.f=dimdef.f, units.f=units.f,
-       range.f=range.f, cover.f=cover.f, timespan.f=timespan.f, missval.f=missval.f, warnings=warnings, errors=errors)
+  list(var.f = var.f,
+       ndim.f = ndim.f,
+       dimname.f = dimname.f,
+       dimdef.f = dimdef.f,
+       units.f = units.f,
+       range.f = range.f,
+       cover.f = cover.f,
+       timespan.f = timespan.f,
+       missval.f = missval.f,
+       warnings = warnings,
+       errors = errors)
 }
 
 
@@ -548,10 +599,19 @@ do_test.filenames <- function(files, reportnames, save2file, thisdate, model.nam
   cat("/*===================      FILE NAMING ISSUES     =============================================*/\n")
   cat("/*=============================================================================================*/\n")
   warnings <- errors <- 0
-  error.types <- list("wrong file ending"=NULL,"inconsistent model/folder name"=NULL,"wrong GCM for climate"=NULL,
-                      "unknown scenario"=NULL,"unknown soc setting"=NULL,"unknown sensitivty setting"=NULL,
-                      "wrong variable"=NULL,"unknown crop"=NULL,"wrong irrigation setting"=NULL,
-                      "wrong region"=NULL,"wrong time step"=NULL,"wrong years"=NULL,"wrong bias adjustment"=NULL)
+  error.types <- list("wrong file ending"=NULL,
+                      "inconsistent model/folder name"=NULL,
+                      "wrong GCM for climate"=NULL,
+                      "unknown scenario"=NULL,
+                      "unknown soc setting"=NULL,
+                      "unknown sensitivity setting"=NULL,
+                      "wrong variable"=NULL,
+                      "unknown crop"=NULL,
+                      "wrong irrigation setting"=NULL,
+                      "wrong region"=NULL,
+                      "wrong time step"=NULL,
+                      "wrong years"=NULL,
+                      "wrong bias adjustment"=NULL)
   for(fn in 1:length(files)){
     test <- test.filename(files[fn], model.name, ignore)
     warnings <- warnings + test$warnings
@@ -569,18 +629,26 @@ do_test.filenames <- function(files, reportnames, save2file, thisdate, model.nam
     if(!is.null(test$timestep.f)) error.types[[11]] <- c(error.types[[11]],fn)
     if(!is.null(test$years.f)) error.types[[12]] <- c(error.types[[12]],fn)
     if(!is.null(test$bias.f)) error.types[[13]] <- c(error.types[[13]],fn)
-    collected <- paste0(if(!is.null(test$ending.f))test$ending.f,if(!is.null(test$mname.f))test$mname.f,
-                        if(!is.null(test$climate.f))test$climate.f,if(!is.null(test$bias.f))test$bias.f,
-                        if(!is.null(test$scen.f))test$scen.f,if(!is.null(test$soc.f))test$soc.f,
-                        if(!is.null(test$sens.f))test$sens.f,if(!is.null(test$var.f))test$var.f,
-                        if(!is.null(test$crop.f))test$crop.f,if(!is.null(test$irrig.f))test$irrig.f,
-                        if(!is.null(test$region.f))test$region.f,if(!is.null(test$timestep.f))test$timestep.f,
+    collected <- paste0(if(!is.null(test$ending.f))test$ending.f,
+                        if(!is.null(test$mname.f))test$mname.f,
+                        if(!is.null(test$climate.f))test$climate.f,
+                        if(!is.null(test$bias.f))test$bias.f,
+                        if(!is.null(test$scen.f))test$scen.f,
+                        if(!is.null(test$soc.f))test$soc.f,
+                        if(!is.null(test$sens.f))test$sens.f,
+                        if(!is.null(test$var.f))test$var.f,
+                        if(!is.null(test$crop.f))test$crop.f,
+                        if(!is.null(test$irrig.f))test$irrig.f,
+                        if(!is.null(test$region.f))test$region.f,
+                        if(!is.null(test$timestep.f))test$timestep.f,
                         if(!is.null(test$years.f))test$years.f)
     if(length(collected)>0)
-      fname.issues[length(fname.issues)+1] <- paste0("file naming issues (",test$warnings," warnings; ",test$errors," errors) with ",files[fn],"\n",collected)
+      fname.issues[length(fname.issues)+1] <- paste0("file naming issues (",test$warnings," warnings; ",test$errors,
+                                                     " errors) with ",files[fn],"\n",collected)
   }
   if(length(fname.issues)>0){
-    cat(length(fname.issues),"file names issues in ",length(files)," files, with ",warnings,"Warnings and ",errors,"errors.\n\n")
+    cat(length(fname.issues),"file names issues in ",length(files)," files, with ",warnings,"Warnings and ",errors,
+        "errors.\n\n")
     #indent.switch(indent=4)
     cat(fname.issues[[1]],sep="\n")  
     if(length(fname.issues)>2)
@@ -591,7 +659,8 @@ do_test.filenames <- function(files, reportnames, save2file, thisdate, model.nam
     counter <- 1
     for(i in 1:length(error.types)){
       if(length(error.types[[i]])>0){
-        cat(counter,": ",names(error.types)[i],": in ",length(error.types[[i]])," files, e.g. ",files[error.types[[i]][1]],"\n",sep="")
+        cat(counter,": ",names(error.types)[i],": in ",length(error.types[[i]])," files, e.g. ",files[error.types[[i]][1]],
+            "\n",sep="")
         counter <- counter +1 
       }
     }
@@ -629,17 +698,36 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sim.r
             for(gcm in 1:length(gcms)){
               for(var in 1:length(vars)){
                 if (ignore$years) {
-                  fn <- paste0(tolower(gcms[gcm]), "/", rcsps[rcsp], "/", crops[crop], "/", 
-                               model.name,"_",tolower(gcms[gcm]),"_w5e5_",rcsps[rcsp],"_",
-                               socs[soc],"_",sens[sen],"_",vars[var],"-",crops[crop],"-",
-                               irrigs[irrig],"_global_annual_*.nc")
+                  fn <- paste0(tolower(gcms[gcm]), "/", 
+                               rcsps[rcsp], "/", 
+                               crops[crop], "/", 
+                               model.name,"_",
+                               tolower(gcms[gcm]),
+                               "_w5e5_",
+                               rcsps[rcsp],"_",
+                               socs[soc],"_",
+                               sens[sen],"_",
+                               vars[var],"-",
+                               crops[crop],"-",
+                               irrigs[irrig],
+                               "_global_annual_*.nc")
                   does_exist <- !identical(Sys.glob(fn), character(0))
                 } else {
-                  fn <- paste0(tolower(gcms[gcm]), "/", rcsps[rcsp], "/", crops[crop], "/", 
-                               model.name,"_",tolower(gcms[gcm]),"_w5e5_",rcsps[rcsp],"_",
-                               socs[soc],"_",sens[sen],"_",vars[var],"-",crops[crop],"-",
-                               irrigs[irrig],"_global_annual_",ifelse(rcsp<3,1850,2015),
-                               "_",ifelse(rcsp==2,2014,2100),".nc")
+                  fn <- paste0(tolower(gcms[gcm]), "/", 
+                               rcsps[rcsp], "/", 
+                               crops[crop], "/", 
+                               model.name,"_",
+                               tolower(gcms[gcm]),
+                               "_w5e5_",
+                               rcsps[rcsp],"_",
+                               socs[soc],"_",
+                               sens[sen],"_",
+                               vars[var],"-",
+                               crops[crop],"-",
+                               irrigs[irrig],
+                               "_global_annual_",
+                               ifelse(rcsp<3,1850,2015), "_",
+                               ifelse(rcsp==2,2014,2100),".nc")
                   does_exist <- file.exists(fn)
                 }
                 if(does_exist){
@@ -733,9 +821,12 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sim.r
     
     
     # partially missing things
-    sims2 <- sims[if(!is.null(mcrops))c(1:length(crops))[-mcrops] else 1,if(!is.null(mirrigs))c(1:length(irrigs))[-mirrigs] else 1,
-                  if(!is.null(mrcsps))c(1:length(rcsps))[-mrcsps] else 1,if(!is.null(msocs))c(1:length(socs))[-msocs] else 1,
-                  if(!is.null(msens))c(1:length(sens))[-msens] else 1,if(!is.null(mgcms))c(1:length(gcms))[-mgcms] else 1,
+    sims2 <- sims[if(!is.null(mcrops))c(1:length(crops))[-mcrops] else 1,
+                  if(!is.null(mirrigs))c(1:length(irrigs))[-mirrigs] else 1,
+                  if(!is.null(mrcsps))c(1:length(rcsps))[-mrcsps] else 1,
+                  if(!is.null(msocs))c(1:length(socs))[-msocs] else 1,
+                  if(!is.null(msens))c(1:length(sens))[-msens] else 1,
+                  if(!is.null(mgcms))c(1:length(gcms))[-mgcms] else 1,
                   if(!is.null(mvars))c(1:length(vars))[-mvars] else 1]
     
     if(!all(sims2==1)){
@@ -769,9 +860,15 @@ do_test.files <- function(files, reportnames, landseamask, save2file, thisdate) 
   cat("\n\n", thisdate, "\n\n")
   cat(paste("\nReading", length(files), "files...\n"))
   warnings <- errors <- 0
-  error.types <- list("variable issues"=NULL, "number of dimensions"=NULL, "dimension names"=NULL,
-                      "dimension definitions"=NULL, "units"=NULL, "data ranges"=NULL,
-                      "data coverage"=NULL, "time span"=NULL, "missing value"=NULL)
+  error.types <- list("variable issues"=NULL, 
+                      "number of dimensions"=NULL, 
+                      "dimension names"=NULL,
+                      "dimension definitions"=NULL, 
+                      "units"=NULL, 
+                      "data ranges"=NULL,
+                      "data coverage"=NULL, 
+                      "time span"=NULL, 
+                      "missing value"=NULL)
   for(fn in 1:length(files)){
     
     cat(paste0(fn, "..."))
@@ -800,7 +897,8 @@ do_test.files <- function(files, reportnames, landseamask, save2file, thisdate) 
                         if(!is.null(test$timespan.f))test$timespan.f,
                         if(!is.null(test$missval.f))test$missval.f)
     if(length(collected)>0)
-      data.issues[length(data.issues)+1] <- paste0("data range and coverage issues (",test$warnings," warnings; ",test$errors," errors) with ",files[fn],"\n",collected)
+      data.issues[length(data.issues)+1] <- paste0("data range and coverage issues (",test$warnings," warnings; ",test$errors,
+                                                   " errors) with ",files[fn],"\n",collected)
   }
   
   # Print messages for every netCDF to detailed output file
@@ -830,7 +928,8 @@ do_test.files <- function(files, reportnames, landseamask, save2file, thisdate) 
     counter <- 1
     for(i in 1:length(error.types)){
       if(length(error.types[[i]])>0){
-        cat(counter,": ",names(error.types)[i],": in ",length(error.types[[i]])," files, e.g. ",files[error.types[[i]][1]],"\n",sep="")
+        cat(counter,": ",names(error.types)[i],": in ",length(error.types[[i]])," files, e.g. ",files[error.types[[i]][1]],
+            "\n",sep="")
         counter <- counter +1 
       }
     }
