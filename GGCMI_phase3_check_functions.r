@@ -572,8 +572,7 @@ setup_reports <- function(report_dir, report_dir_web, save2file, thisdate, model
   
   if (save2file) sink(file=reportnames$summary,append=F)
 
-  cat("********  GGCMI Phase 3 file check summary report ********\n\n")
-  cat(thisdate,"\n\n")
+  cat("\n\n********  GGCMI Phase 3 file check summary report ********\n\n")
   cat("there are more detailed reports for specific aspects:\n")
   if (report_dir_web != "") {
     cat(paste0(report_dir_web,model.name,"_filename_issues.txt"),"\n")
@@ -600,6 +599,10 @@ do_test.filenames <- function(files, reportnames, save2file, thisdate, model.nam
   cat("/*=============================================================================================*/\n")
   cat("/*===================      FILE NAMING ISSUES     =============================================*/\n")
   cat("/*=============================================================================================*/\n")
+  cat(thisdate,"\n\n")
+  if (ignore$years) {
+    cat("WARNING: Not checking years in filenames\n\n")
+  }
   warnings <- errors <- 0
   error.types <- list("wrong file ending"=NULL,
                       "inconsistent model/folder name"=NULL,
@@ -648,6 +651,23 @@ do_test.filenames <- function(files, reportnames, save2file, thisdate, model.nam
       fname.issues[length(fname.issues)+1] <- paste0("file naming issues (",test$warnings," warnings; ",test$errors,
                                                      " errors) with ",files[fn],"\n",collected)
   }
+  
+  # Print messages for every netCDF to detailed output file
+  if(length(fname.issues)>0){
+    cat(unlist(fname.issues),sep="\n")
+  } else {
+    cat("no file naming issues detected.\n")
+  }
+  
+  # Print selection to summary file
+  if (save2file) {
+    sink()
+    sink(file=reportnames$summary, append=T)
+  }
+  cat("\n\n********  GGCMI Phase 3 filename check report ********\n\n")
+  if (ignore$years) {
+    cat("WARNING: Not checking years in filenames\n\n")
+  }
   if(length(fname.issues)>0){
     cat(length(fname.issues),"file names issues in ",length(files)," files, with ",warnings,"Warnings and ",errors,
         "errors.\n\n")
@@ -666,21 +686,6 @@ do_test.filenames <- function(files, reportnames, save2file, thisdate, model.nam
         counter <- counter +1 
       }
     }
-  }
-  
-  # stop reporting
-  if (save2file) sink()
-  
-  if (save2file) sink(file=reportnames$summary,append=F)
-  cat("********  GGCMI Phase 3 file check report ********\n\n")
-  cat(thisdate,"\n\n")
-  if (ignore$years) {
-    cat("WARNING: Not checking years in filenames\n\n")
-  }
-  if(length(fname.issues)>0){
-    cat(unlist(fname.issues),sep="\n")
-  } else {
-    cat("no file naming issues detected.\n")
   }
   if (save2file) sink()
 }
@@ -744,9 +749,10 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sim.r
   }
   
   if (save2file) sink(file=reportnames$sim,append=T)
-  cat("\n\n\n/*=============================================================================================*/\n")
+  cat("/*=============================================================================================*/\n")
   cat("/*===================      MISSING OUTPUTS        =============================================*/\n")
   cat("/*=============================================================================================*/\n")
+  cat(thisdate, "\n\n")
   
   if(!all(!is.na(sims))){
     mcrops <- mirrigs <- mrcsps <- msocs <- msens <- mgcms <- mvars <- NULL
@@ -838,7 +844,7 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sim.r
       print(sims2)
       if (save2file) {
         sink()
-        sink(file=reportnames$summary,append=F)
+        sink(file=reportnames$summary, append=T)
       }
       cat("incomplete sets:",length(sims2[sims2!=1]),"of",length(sims2),"see",reportnames$sim,"for details.\n")
       
@@ -856,10 +862,10 @@ do_test.files <- function(files, reportnames, landseamask, save2file, thisdate) 
   data.issues <- list()
   
   if (save2file) sink(file=reportnames$data,append=F)
-  cat("\n\n\n/*=============================================================================================*/\n")
+  cat("/*=============================================================================================*/\n")
   cat("/*===================      DATA RANGE and COVERAGE ISSUES      ================================*/\n")
   cat("/*=============================================================================================*/\n")
-  cat("\n\n", thisdate, "\n\n")
+  cat(thisdate, "\n\n")
   cat(paste("\nReading", length(files), "files...\n"))
   warnings <- errors <- 0
   error.types <- list("variable issues"=NULL, 
@@ -871,7 +877,7 @@ do_test.files <- function(files, reportnames, landseamask, save2file, thisdate) 
                       "data coverage"=NULL, 
                       "time span"=NULL, 
                       "missing value"=NULL)
-  for(fn in 1:length(files)){
+  for(fn in 1:10){
     
     cat(paste0(fn, "..."))
     if (fn%%10 == 0) cat("\n")
@@ -914,9 +920,9 @@ do_test.files <- function(files, reportnames, landseamask, save2file, thisdate) 
   # Print selection to summary file
   if (save2file) {
     sink()
-    if (save2file) sink(file=reportnames$summary,append=F)
+    if (save2file) sink(file=reportnames$summary, append=T)
   }
-  cat("********  GGCMI Phase 3 data range and coverage check report ********\n\n")
+  cat("\n\n********  GGCMI Phase 3 data range and coverage check report ********\n\n")
   cat("\n\n")
   if(length(data.issues)>0){
     cat(length(data.issues),"data issues in ",length(files)," files, with ",warnings,"Warnings and ",errors,"errors.\n\n")
