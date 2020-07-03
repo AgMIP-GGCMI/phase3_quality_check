@@ -268,8 +268,8 @@ test.filename <- function(file_path, model.name, ignore){
         warnings <- warnings + 1
       }
       if (!(bit_irr %in% irrigs)) {
-        irrig.f <- paste("  => WARNING:", bit_irr, "not in set of irrigations\n")
-        warnings <- warnings + 1
+        irrig.f <- paste("  => ERROR:", bit_irr, "not in set of irrigations\n")
+        errors <- errors + 1
       }
     }
     
