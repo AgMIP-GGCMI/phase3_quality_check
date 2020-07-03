@@ -208,14 +208,18 @@ test.filename <- function(file_path, model.name, ignore){
     }
     
     # Check that SSP/RCP scenario is valid
-    # TODO: Allows for uppercase in scenario token... should it?
     if (is.na(bit_scen)) {
       scen.f <- "  => ERROR: Failed to parse <climate_scenario> from filename\n"
       errors <- errors + 1
     }
-    else if(!(bit_scen %in% rcsps)){
-      scen.f <- paste("  => ERROR:", bit_scen, "not in set of SSP/RCP scenarios\n")
-      errors <- errors + 1
+    else if(!(bit_scen %in% tolower(rcsps))){
+      if (tolower(bit_scen) %in% tolower(rcsps)) {
+        soc.f <- "  => WARNING: <climate_scenario> in filename should be all lowercase\n"
+        warnings <- warnings + 1
+      } else {
+        soc.f <- paste("  => ERROR:", bit_scen, "not in set of SSP/RCP scenarios\n")
+        errors <- errors + 1
+      }
     }
     
     # Check that socioeconomic scenario is valid
