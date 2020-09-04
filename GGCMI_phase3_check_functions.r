@@ -5,9 +5,10 @@ ranges <- list("yield" = c(0,100),
                "cnyield" = c(0,100),
                "plantday" = c(0,365),
                "plantyear" = c(1850,2100),
+               "harvyear" = c(1600,2100),
                "anthday" = c(0,365),
                "matyday" = c(0,365),
-               "pirrww" = c(0,1e6),
+               "pirnreq" = c(0,1e6),
                "aet" = c(0,1e6),
                "soilmoist1m" = c(0,1e6),
                "transp" = c(0,1e6),
@@ -42,7 +43,7 @@ target_units <- function(varcropirr_in) {
   var_in <- unlist(strsplit(varcropirr_in, "-"))[1]
   
   # Get units
-  if (var_in == "plantyear") {
+  if (is.element(var_in, c("plantyear","harvyear"))) {
     units <- "calendar year"
   } else if (var_in == "plantday") {
     units <- "day of year"
@@ -52,7 +53,7 @@ target_units <- function(varcropirr_in) {
     units <- "gC m-2 gs-1"
   } else if (is.element(var_in, c("n2oemis", "n2emis", "nleach"))) {
     units <- "gN m-2 gs-1"
-  } else if (is.element(var_in, c("pirrww", "aet", "transp", "evap", "runoff"))) {
+  } else if (is.element(var_in, c("pirnreq", "aet", "transp", "evap", "runoff"))) {
     units <- "kg m-2 gs-1"
   } else if (var_in == "soilmoist1m") {
     units <- "kg m-3"
@@ -130,7 +131,7 @@ test.filename <- function(file_path, model.name, ignore){
     
     # Get directory structure
     dir_bits <- split_path(dir_path)
-    dir_bit_gcm <- dir_bits[3]
+    dir_bit_gcm <- dir_bits[2]
     dir_bit_model <- dir_bits[5]
     
     # Check that filename has correct value for <modelname>
@@ -155,12 +156,13 @@ test.filename <- function(file_path, model.name, ignore){
     }
     else if (dir_bit_model != tolower(model.name)) {
       if (tolower(dir_bit_model) == tolower(model.name)) {
-        mname.f <- paste(mname.f, "  => WARNING: <modelname> in directory structure should be all lowercase\n")
+        # model name in directory should not be converted to all lowercase, but can be a mixed bag
+        # mname.f <- paste(mname.f, "  => WARNING: <modelname> in directory structure should be all lowercase\n")
       } else {
         mname.f <- paste0(mname.f, "  => WARNING: directory that should be '", model.name, 
                          "' is instead '", dir_bit_model, "'\n")
+        warnings <- warnings + 1
       }
-      warnings <- warnings + 1
     }
     
     # Check that filename has correct value for <climate_forcing>
@@ -292,7 +294,7 @@ test.filename <- function(file_path, model.name, ignore){
       timestep.f <- "  => ERROR: Failed to parse <timestep> from filename\n"
       errors <- errors + 1
     }
-    else if (bit_timestep != "annual"){
+    else if (bit_timestep != "annual" && !(bit_timestep == "monthly" && bit_var == "soilmoist1m")){
       timestep.f <- paste0("  => ERROR: timestep is '", bit_timestep, "' instead of 'annual'\n")
       errors <- errors + 1
     }
@@ -321,7 +323,7 @@ test.filename <- function(file_path, model.name, ignore){
             if (bit_scen %in% c("picontrol", "historical")) {
               target_startyear <- 1850
             }
-            else if (bit_scen %in% c("ssp126", "ssp585")) {
+            else if (bit_scen %in% c("ssp126", "ssp585", "ssp370")) {
               target_startyear <- 2015
             } else {
               target_startyear <- NA
@@ -331,7 +333,7 @@ test.filename <- function(file_path, model.name, ignore){
             if (bit_scen %in% c("historical")) {
               target_endyear <- 2014
             }
-            else if (bit_scen %in% c("picontrol", "ssp126", "ssp585")) {
+            else if (bit_scen %in% c("picontrol", "ssp126", "ssp585", "ssp370")) {
               target_endyear <- 2100
             } else {
               target_endyear <- NA
@@ -405,16 +407,17 @@ test.file <- function(fn, landseamask){
                         "' instead of '",target_units(var),"'\n")
       errors <- errors + 1
     }
-    if(nc$var[[1]]$missval!=1e20){
-      if (abs(nc$var[[1]]$missval*1e-20 - 1) < 1e-6) {
-        missval.f <- paste0(range.f,"   => WARNING: R reads missing value as '",nc$var[[1]]$missval,"' instead of '1e20'.\n")
-        warnings <- warnings + 1
-      } else {
+    # precision issue, floating point comparison is unreliable: 1e20 != 1e20
+    #if(nc$var[[1]]$missval!=1e20){
+      if (abs(nc$var[[1]]$missval*1e-20 - 1) > 1e-6) {
+        #missval.f <- paste0(range.f,"   => WARNING: R reads missing value as '",nc$var[[1]]$missval,"' instead of '1e20'.\n")
+        #warnings <- warnings + 1
+      #} else {
         missval.f <- paste0(range.f,"   => ERROR: missing value incorrectly defined as '",nc$var[[1]]$missval,
                             "' instead of '1e20'\n")
         errors <- errors + 1
       }
-    }
+    #}
     
     #=#=#=#=#=#=#=#=#=#=#=#=#=#=
     # Check dimensions
@@ -476,10 +479,16 @@ test.file <- function(fn, landseamask){
       } else {
         since_units <- "growing seasons"
       }
-      if(nc$dim$time$units!="growing seasons since 1850-01-01 00:00:00"){
-        dimdef.f <- paste0(dimdef.f,"  => ERROR: time units incorrectly defined as '",nc$dim$time$units,"' instead of '",
-                           since_units," since 1850-01-01 00:00:00'\n")
-        errors <- errors + 1
+      if(nc$dim$time$units!="growing seasons since 1661-01-01, 00:00:00"){
+        if(nc$dim$time$units!="growing seasons since 1661-01-01 00:00:00"){
+          dimdef.f <- paste0(dimdef.f,"  => WARNING: time units incorrectly defined as '",nc$dim$time$units,"' instead of '",
+                             since_units," since 1661-01-01, 00:00:00' (commma missing)\n")
+          warnings <- warnings + 1
+        } else {
+          dimdef.f <- paste0(dimdef.f,"  => ERROR: time units incorrectly defined as '",nc$dim$time$units,"' instead of '",
+                             since_units," since 1661-01-01, 00:00:00'\n")
+          errors <- errors + 1
+        }
       }
     }
     fn_years <- tail(unlist(strsplit(unlist(strsplit(basename(fn), ".", fixed=TRUE))[1], "_")), 2)
@@ -514,22 +523,22 @@ test.file <- function(fn, landseamask){
     # Check for match to land/ocean mask
     if(!all(is.finite(test1[landseamask$mask==1]))){
       cover.f <- paste(cover.f,"  => WARNING: not all land with valid values in first time step (",
-                       length(which(is.finite(test1[landseamask$mask==1]))),"of",length(which(landseamask$mask==1)),")\n")
+                       length(which(!is.finite(test1[is.finite(landseamask$mask)]))),"of",length(which(is.finite(landseamask$mask))),")\n")
       warnings <- warnings + 1
     }
     if(!all(!is.finite(test1[landseamask$mask==0]))){
       cover.f <- paste(cover.f,"  => ERROR: not all ocean with invalid values in first time step (",
-                       length(which(!is.finite(test1[landseamask$mask==0]))),"of",length(which(landseamask$mask==0)),")\n")
+                       length(which(is.finite(test1[!is.finite(landseamask$mask)]))),"of",length(which(!is.finite(landseamask$mask))),")\n")
       errors <- errors + 1
     }
     if(!all(is.finite(test2[landseamask$mask==1]))){
       cover.f <- paste(cover.f,"  => WARNING: not all land with valid values in last time step (",
-                       length(which(is.finite(test2[landseamask$mask==1]))),"of",length(which(landseamask$mask==1)),")\n")
+                       length(which(!is.finite(test2[is.finite(landseamask$mask)]))),"of",length(which(is.finite(landseamask$mask))),")\n")
       warnings <- warnings + 1
     }
     if(!all(!is.finite(test2[landseamask$mask==0]))){
       cover.f <- paste(cover.f,"  => ERROR: not all ocean with invalid values in last time step (",
-                       length(which(!is.finite(test2[landseamask$mask==0]))),"of",length(which(landseamask$mask==0)),")\n")
+                       length(which(is.finite(test2[!is.finite(landseamask$mask)]))),"of",length(which(!is.finite(landseamask$mask))),")\n")
       errors <- errors + 1
     }
     
