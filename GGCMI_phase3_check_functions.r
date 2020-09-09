@@ -130,8 +130,12 @@ test.filename <- function(file_path, model.name, ignore){
     bit_timestep <- bits[9]
     
     # Get directory structure
+    # AgMIP.output/<modelname>/phase3b/<climate_forcing>/<climate_scenario>/<crop>
     dir_bits <- split_path(dir_path)
-    dir_bit_gcm <- dir_bits[2]
+    dir_bit_crop <- dir_bits[1]
+    dir_bit_scen <- dir_bits[2]
+    dir_bit_gcm <- dir_bits[3]
+    dir_bit_phase <- dir_bits[4]
     dir_bit_model <- dir_bits[5]
     
     # Check that filename has correct value for <modelname>
