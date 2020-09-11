@@ -386,7 +386,7 @@ test.filename <- function(file_path, model.name, ignore){
 }
 
 test.file <- function(fn, landseamask){
-  var.f <- ndim.f <- dimname.f <- dimdef.f <- units.f <- range.f <- cover.f <- timespan.f <- missval.f <- NULL  
+  compress.f <- var.f <- ndim.f <- dimname.f <- dimdef.f <- units.f <- range.f <- cover.f <- timespan.f <- missval.f <- NULL  
   warnings <- errors <- 0
 
   bits <- unlist(strsplit(fn,"[.]"))
@@ -410,6 +410,10 @@ test.file <- function(fn, landseamask){
       units.f <- paste0(units.f,"  => ERROR: variable units incorrectly defined as '",nc$var[[1]]$units,
                         "' instead of '",target_units(var),"'\n")
       errors <- errors + 1
+    }
+    if(!is.finite(nc$var[[1]]$compression) | nc$var[[1]]$compression<6){
+      compress.f <- paste0(compress.f,"  => ERROR: file size not compressed to at least level 6, but to ",nc$var[[1]]$compression,"\n")
+      errors <- errors +1 
     }
     # precision issue, floating point comparison is unreliable: 1e20 != 1e20
     #if(nc$var[[1]]$missval!=1e20){
@@ -567,6 +571,7 @@ test.file <- function(fn, landseamask){
        cover.f = cover.f,
        timespan.f = timespan.f,
        missval.f = missval.f,
+       compress.f = compress.f,
        warnings = warnings,
        errors = errors)
 }
@@ -893,8 +898,9 @@ do_test.files <- function(files, reportnames, landseamask, save2file, thisdate) 
                       "data ranges"=NULL,
                       "data coverage"=NULL, 
                       "time span"=NULL, 
-                      "missing value"=NULL)
-  for(fn in 1:10){
+                      "missing value"=NULL,
+                      "compression issues"=NULL)
+  for(fn in 1:length(files)){
     
     cat(paste0(fn, "..."))
     if (fn%%10 == 0) cat("\n")
@@ -911,6 +917,7 @@ do_test.files <- function(files, reportnames, landseamask, save2file, thisdate) 
     if(!is.null(test$cover.f)) error.types[[7]] <- c(error.types[[7]],fn)
     if(!is.null(test$timespan.f)) error.types[[8]] <- c(error.types[[8]],fn)
     if(!is.null(test$missval.f)) error.types[[9]] <- c(error.types[[9]],fn)
+    if(!is.null(test$compress.f)) error.types[[10]] <- c(error.types[[10]],fn)
     
     collected <- paste0(if(!is.null(test$var.f))test$var.f,
                         if(!is.null(test$ndim.f))test$ndim.f,
@@ -920,7 +927,8 @@ do_test.files <- function(files, reportnames, landseamask, save2file, thisdate) 
                         if(!is.null(test$range.f))test$range.f,
                         if(!is.null(test$cover.f))test$cover.f,
                         if(!is.null(test$timespan.f))test$timespan.f,
-                        if(!is.null(test$missval.f))test$missval.f)
+                        if(!is.null(test$missval.f))test$missval.f,
+                        if(!is.null(test$compress.f))test$compress.f)
     if(length(collected)>0)
       data.issues[length(data.issues)+1] <- paste0("data range and coverage issues (",test$warnings," warnings; ",test$errors,
                                                    " errors) with ",files[fn],"\n",collected)
