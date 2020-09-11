@@ -556,6 +556,7 @@ test.file <- function(fn, landseamask){
                        ") outside valid range", paste(ranges[[index]],collapse=" "), "\n")
       warnings <- warnings + 1
     }
+    nc_close(nc)
     
   } else {
     var.f <- paste("  => ERROR: Variable",bits2[1],"unknown\n")
@@ -900,10 +901,11 @@ do_test.files <- function(files, reportnames, landseamask, save2file, thisdate) 
                       "time span"=NULL, 
                       "missing value"=NULL,
                       "compression issues"=NULL)
-  for(fn in 1:length(files)){
-    
-    cat(paste0(fn, "..."))
-    if (fn%%10 == 0) cat("\n")
+  
+  for(fn in 1:min(1000,length(files))){
+      
+    if(fn%%10==0) cat(paste0(fn, "..."))
+    if (fn%%100 == 0) cat("\n")
     
     test <- test.file(files[fn], landseamask)
     warnings <- warnings + test$warnings
@@ -931,7 +933,7 @@ do_test.files <- function(files, reportnames, landseamask, save2file, thisdate) 
                         if(!is.null(test$compress.f))test$compress.f)
     if(length(collected)>0)
       data.issues[length(data.issues)+1] <- paste0("data range and coverage issues (",test$warnings," warnings; ",test$errors,
-                                                   " errors) with ",files[fn],"\n",collected)
+                                                     " errors) with ",files[fn],"\n",collected)
   }
   
   # Print messages for every netCDF to detailed output file
