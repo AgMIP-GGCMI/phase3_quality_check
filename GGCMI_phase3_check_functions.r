@@ -746,7 +746,7 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sim.r
                   fn <- paste0(tolower(gcms[gcm]), "/", 
                                rcsps[rcsp], "/", 
                                crops[crop], "/", 
-                               model.name,"_",
+                               tolower(model.name),"_",
                                tolower(gcms[gcm]),
                                "_w5e5_",
                                rcsps[rcsp],"_",
@@ -859,17 +859,24 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sim.r
                   if(!is.null(msens))c(1:length(sens))[-msens] else 1,
                   if(!is.null(mgcms))c(1:length(gcms))[-mgcms] else 1,
                   if(!is.null(mvars))c(1:length(vars))[-mvars] else 1]
+    sims3 <- sims[if(!is.null(mcrops))c(1:length(crops))[-mcrops] else c(1:length(crops)),
+                  if(!is.null(mirrigs))c(1:length(irrigs))[-mirrigs] else c(1:length(irrigs)),
+                  if(!is.null(mrcsps))c(1:length(rcsps))[-mrcsps] else c(1:length(rcsps)),
+                  if(!is.null(msocs))c(1:length(socs))[-msocs] else c(1:length(socs)),
+                  if(!is.null(msens))c(1:length(sens))[-msens] else c(1:length(sens)),
+                  if(!is.null(mgcms))c(1:length(gcms))[-mgcms] else c(1:length(gcms)),
+                  if(!is.null(mvars))c(1:length(vars))[-mvars] else c(1:length(vars))]
     
-    if(!all(sims2==1)){
+    if(!all(!is.finite(sims3))){
       cat("incomplete sets:\n")
-      sims2[sims2!=1] <- "miss"
-      sims2[sims2==1] <- "OK"
-      print(sims2)
+      sims3[!is.finite(sims3) | sims3!=1] <- "miss"
+      sims3[sims3==1] <- "OK"
+      print(aperm(sims3,order(dim(sims3))[length(dim(sims3)):1]))
       if (save2file) {
         sink()
         sink(file=reportnames$summary, append=T)
       }
-      cat("incomplete sets:",length(sims2[sims2!=1]),"of",length(sims2),"see",reportnames$sim,"for details.\n")
+      cat("incomplete sets:",length(sims3[sims3!=1]),"of",length(sims3),"see",reportnames$sim,"for details.\n")
       
     }
   } else {
