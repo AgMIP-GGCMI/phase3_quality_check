@@ -731,7 +731,7 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sim.r
                   fn <- paste0(tolower(gcms[gcm]), "/", 
                                rcsps[rcsp], "/", 
                                crops[crop], "/", 
-                               model.name,"_",
+                               tolower(model.name),"_",
                                tolower(gcms[gcm]),
                                "_w5e5_",
                                rcsps[rcsp],"_",
