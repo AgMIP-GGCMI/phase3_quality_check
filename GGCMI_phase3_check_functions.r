@@ -24,9 +24,9 @@ ranges <- list("yield" = c(0,100),
                "tcemis" = c(0,1e4),
                "ch4emis" = c(0,1e4))
               
-readmask.nc <- function(filename,lo="lon",la="lat"){
+readmask.nc <- function(filename,lo="lon",la="lat",var=""){
   nc <- nc_open(filename)
-  var <- names(nc$var)[1]
+  if(var=="") var <- names(nc$var)[1]
   lon <- ncvar_get(nc,lo)
   if(min(lon)>=0){
     cat("WARNING! Longitude does not contain negative values, shifting >180 by 360\n")
@@ -487,8 +487,8 @@ test.file <- function(fn, landseamask){
       } else {
         since_units <- "growing seasons"
       }
-      if(nc$dim$time$units!="growing seasons since 1661-01-01, 00:00:00"){
-        if(nc$dim$time$units!="growing seasons since 1661-01-01 00:00:00"){
+      if(nc$dim$time$units!=paste0(since_units," since 1661-01-01, 00:00:00")){
+        if(nc$dim$time$units==paste0(since_units," since 1661-01-01 00:00:00")){
           dimdef.f <- paste0(dimdef.f,"  => WARNING: time units incorrectly defined as '",nc$dim$time$units,"' instead of '",
                              since_units," since 1661-01-01, 00:00:00' (commma missing)\n")
           warnings <- warnings + 1
@@ -981,6 +981,50 @@ do_test.files <- function(files, reportnames, landseamask, save2file, thisdate) 
   if (save2file) sink()
 }
 
-
-
+# do_test.timedefinition(reportnames, landseamask, save2file, thisdate)
+# {
+#   for(crop in 1:length(crops)){
+#     for(irrig in 1:length(irrigs)){
+#       pday <- readmask.nc()
+#       for(rcsp in 1:length(rcsps)){
+#         for(soc in 1:length(socs)){
+#           for(sen in 1:length(sens)){
+#             for(gcm in 1:length(gcms)){
+#               for(var in 1:length(vars)){
+#                 fn <- paste0(tolower(gcms[gcm]), "/", 
+#                              rcsps[rcsp], "/", 
+#                              crops[crop], "/", 
+#                              tolower(model.name),"_",
+#                              tolower(gcms[gcm]),
+#                              "_w5e5_",
+#                              rcsps[rcsp],"_",
+#                              socs[soc],"_",
+#                              sens[sen],"_",
+#                              vars[var],"-",
+#                              crops[crop],"-",
+#                              irrigs[irrig],
+#                              "_global_annual_",
+#                              ifelse(rcsp<3,1850,2015), "_",
+#                              ifelse(rcsp==2,2014,2100),".nc")
+#                 does_exist <- file.exists(fn)
+#                 if(does_exist){
+#                   sims[crop,irrig,rcsp,soc,sen,gcm,var] <- 1
+#                 }
+#               }
+#             }
+#           }
+#         }
+#       }
+#     }
+#   }
+#   
+#   if (save2file) sink(file=reportnames$sim,append=T)
+#   cat("/*=============================================================================================*/\n")
+#   cat("/*===================      MISSING OUTPUTS        =============================================*/\n")
+#   cat("/*=============================================================================================*/\n")
+#   cat(thisdate, "\n\n")
+#   
+# }
+# 
+# 
 
