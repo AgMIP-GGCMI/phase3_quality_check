@@ -417,7 +417,7 @@ test.file <- function(fn, landseamask){
     }
     # precision issue, floating point comparison is unreliable: 1e20 != 1e20
     #if(nc$var[[1]]$missval!=1e20){
-      if (abs(nc$var[[1]]$missval*1e-20 - 1) > 1e-6) {
+      if (!is.finite(nc$var[[1]]$missval) | abs(nc$var[[1]]$missval*1e-20 - 1) > 1e-6) {
         #missval.f <- paste0(range.f,"   => WARNING: R reads missing value as '",nc$var[[1]]$missval,"' instead of '1e20'.\n")
         #warnings <- warnings + 1
       #} else {
