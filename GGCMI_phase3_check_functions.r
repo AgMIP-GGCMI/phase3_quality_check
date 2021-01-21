@@ -22,7 +22,8 @@ ranges <- list("yield" = c(0,100),
                "n2emis" = c(0,1e4),
                "nleach" = c(0,1e4),
                "tcemis" = c(0,1e4),
-               "ch4emis" = c(0,1e4))
+               "ch4emis" = c(0,1e4),
+               "maturitystatus" = c(0,1))
               
 readmask.nc <- function(filename,lo="lon",la="lat",var=""){
   nc <- nc_open(filename)
@@ -61,7 +62,7 @@ target_units <- function(varcropirr_in) {
     units <- "kgN ha-1 gs-1"
   } else if (is.element(var_in, c("yield", "biom", "rootm"))) {
     units <- "t ha-1 gs-1 (dry matter)"
-  } else if (var_in == "cnyield") {
+  } else if (is.element(var_in, c("cnyield","maturitystatus"))) {
       units <- ""
   } else {
     stop(paste(var_in, "not recognized when trying to get units"))
@@ -407,9 +408,12 @@ test.file <- function(fn, landseamask){
       errors <- errors + 1
     }
     if(nc$var[[1]]$units!=target_units(var)){
-      units.f <- paste0(units.f,"  => ERROR: variable units incorrectly defined as '",nc$var[[1]]$units,
-                        "' instead of '",target_units(var),"'\n")
-      errors <- errors + 1
+      if(!(bits2[1]=="maturitystatus" | bits2[1]=="cnyield") & nc$var[[1]]$units!="-") # also allow unit "-" instead of "" for maturitystatus and CN:ratios
+      {
+        units.f <- paste0(units.f,"  => ERROR: variable units incorrectly defined as '",nc$var[[1]]$units,
+                          "' instead of '",target_units(var),"'\n")
+        errors <- errors + 1
+      }
     }
     if(!is.finite(nc$var[[1]]$compression) | nc$var[[1]]$compression<6){
       compress.f <- paste0(compress.f,"  => ERROR: file size not compressed to at least level 6, but to ",nc$var[[1]]$compression,"\n")
