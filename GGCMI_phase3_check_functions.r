@@ -23,7 +23,8 @@ ranges <- list("yield" = c(0,100),
                "nleach" = c(0,1e4),
                "tcemis" = c(0,1e4),
                "ch4emis" = c(0,1e4),
-               "maturitystatus" = c(0,1))
+               "maturitystatus" = c(0,1),
+               "maturityindex" = c(-5,1))
               
 readmask.nc <- function(filename,lo="lon",la="lat",var=""){
   nc <- nc_open(filename)
@@ -62,7 +63,7 @@ target_units <- function(varcropirr_in) {
     units <- "kgN ha-1 gs-1"
   } else if (is.element(var_in, c("yield", "biom", "rootm"))) {
     units <- "t ha-1 gs-1 (dry matter)"
-  } else if (is.element(var_in, c("cnyield","maturitystatus"))) {
+  } else if (is.element(var_in, c("cnyield","maturitystatus","maturityindex"))) {
       units <- ""
   } else {
     stop(paste(var_in, "not recognized when trying to get units"))
@@ -408,7 +409,7 @@ test.file <- function(fn, landseamask){
       errors <- errors + 1
     }
     if(nc$var[[1]]$units!=target_units(var)){
-      if(!(bits2[1]=="maturitystatus" | bits2[1]=="cnyield") & nc$var[[1]]$units!="-") # also allow unit "-" instead of "" for maturitystatus and CN:ratios
+      if(!(bits2[1]=="maturitystatus" | bits2[1]=="cnyield" | bits2[1]=="maturityindex") & nc$var[[1]]$units!="-") # also allow unit "-" instead of "" for maturitystatus and CN:ratios
       {
         units.f <- paste0(units.f,"  => ERROR: variable units incorrectly defined as '",nc$var[[1]]$units,
                           "' instead of '",target_units(var),"'\n")
@@ -481,11 +482,6 @@ test.file <- function(fn, landseamask){
       errors <- errors + 1
     } else {
       time <- ncvar_get(nc,"time")
-      if(!all(lat==landseamask$lat)){
-        dimdef.f <- paste(dimdef.f,"  => ERROR: latitude dimension is incorrectly defined, ranging from",lat[1],"to",
-                          lat[length(lat)],"by",lat[2]-lat[1],"\n")
-        errors <- errors + 1
-      }
       if (unlist(strsplit(var, "-"))[1] == "soilmoist1m") {
         since_units <- "months"
       } else {
@@ -526,7 +522,7 @@ test.file <- function(fn, landseamask){
     # Check variable data
     #=#=#=#=#=#=#=#=#=#=#=#=#=#=
     
-    # Read
+    # Read data
     data <- ncvar_get(nc,var)
     test1 <- data[,,1]
     test2 <- data[,,dim(data)[3]]

@@ -21,7 +21,8 @@ socs <- c("histsoc","2015soc")
 sens <- c("default","2015co2","1850co2")
 gcms <- c("GFDL-ESM4","IPSL-CM6A-LR","MPI-ESM1-2-HR","MRI-ESM2-0","UKESM1-0-LL")
 vars <- c("yield","biom","cnyield","plantday","plantyear","harvyear","anthday","matyday","pirnreq","aet","soilmoist1m",
-          "transp","evap","runoff","rootm","tnrup","tnrin","tnrloss","n2oemis","n2emis","nleach","tcemis","ch4emis","maturitystatus")
+          "transp","evap","runoff","rootm","tnrup","tnrin","tnrloss","n2oemis","n2emis","nleach","tcemis","ch4emis","maturitystatus",
+          "maturityindex")
 
 
 #######################
