@@ -13,7 +13,7 @@ report_dir_web <- "" # Set to "" to ignore
 ggcmi_function_file <- "/home/cmueller/github_ggcmi/GGCMI_phase3_check_functions.r"
 
 # settings and definitions ####
-model.name <- "pDSSAT"
+model.name <- "ACEA"
 crops <- c("mai","ri1","ri2","soy","swh","mil","sor","wwh")
 irrigs <- c("firr","noirr")
 rcsps <- c("picontrol","historical","ssp126","ssp585","ssp370")
