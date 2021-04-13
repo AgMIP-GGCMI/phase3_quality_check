@@ -13,6 +13,7 @@ ranges <- list("yield" = c(0,100),
                "soilmoist1m" = c(0,1e6),
                "transp" = c(0,1e6),
                "evap" = c(0,1e6),
+               "soilevap" = c(0,1e6),
                "runoff" = c(0,1e6),
                "rootm" = c(0,100),
                "tnrup" = c(0,1e4),
@@ -24,7 +25,8 @@ ranges <- list("yield" = c(0,100),
                "tcemis" = c(0,1e4),
                "ch4emis" = c(0,1e4),
                "maturitystatus" = c(0,1),
-               "maturityindex" = c(-5,1))
+               "maturityindex" = c(-5,1),
+               "soilmoistmat" = c(0,1e6))
               
 readmask.nc <- function(filename,lo="lon",la="lat",var=""){
   nc <- nc_open(filename)
@@ -55,9 +57,9 @@ target_units <- function(varcropirr_in) {
     units <- "gC m-2 gs-1"
   } else if (is.element(var_in, c("n2oemis", "n2emis", "nleach"))) {
     units <- "gN m-2 gs-1"
-  } else if (is.element(var_in, c("pirnreq", "aet", "transp", "evap", "runoff"))) {
+  } else if (is.element(var_in, c("pirnreq", "aet", "transp", "evap", "runoff", "soilevap"))) {
     units <- "kg m-2 gs-1"
-  } else if (var_in == "soilmoist1m") {
+  } else if (is.element(var_in, c("soilmoist1m", "soilmoistmat"))) {
     units <- "kg m-3"
   } else if (is.element(var_in, c("tnrup", "tnrin", "tnrloss"))) {
     units <- "kgN ha-1 gs-1"
@@ -271,6 +273,7 @@ test.filename <- function(file_path, model.name, ignore){
     }
     else{
       # TODO: Why is this an error for variable but a warning for the other two strings?
+      # because undefined variables are not allowed, but additional crops are. So are additional irrigation settings (as planned for the irrig side branch)
       if (!(bit_var %in% vars)) {
         var.f <- paste("  => ERROR:", bit_var, "not in set of variables\n")
         errors <- errors + 1
