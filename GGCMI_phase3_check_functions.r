@@ -84,6 +84,7 @@ split_path <- function(path) {
 
 
 test.filename <- function(file_path, model.name, ignore){
+  # attrici data have no <bias_adjustment> flag, otherwise file name structure is like this:
   # <modelname>_<climate_forcing>_<bias_adjustment>_<climate_scenario>_<soc_scenario>_<sens_scenario>_<variable>-<crop>-<irrigation>_<region>_<timestep>_<start_year>_<end_year>.nc
   ending.f <- mname.f <- climate.f <- bias.f <- scen.f <- soc.f <- sens.f <- var.f <- crop.f <- irrig.f <- region.f <- timestep.f <- 
     years.f <- NULL
@@ -125,13 +126,23 @@ test.filename <- function(file_path, model.name, ignore){
     bits <- unlist(strsplit(bits[1],"_"))
     bit_model <- bits[1]
     bit_gcm <- bits[2]
-    bit_bc <- bits[3]
-    bit_scen <- bits[4]
-    bit_soc <- bits[5]
-    bit_sens <- bits[6]
-    fn_var <- bits[7]
-    bit_region <- bits[8]
-    bit_timestep <- bits[9]
+    if (phase != "phase3a_attrici") {
+      bit_bc <- bits[3]
+      bit_scen <- bits[4]
+      bit_soc <- bits[5]
+      bit_sens <- bits[6]
+      fn_var <- bits[7]
+      bit_region <- bits[8]
+      bit_timestep <- bits[9]
+    } 
+    else {
+      bit_scen <- bits[3]
+      bit_soc <- bits[4]
+      bit_sens <- bits[5]
+      fn_var <- bits[6]
+      bit_region <- bits[7]
+      bit_timestep <- bits[8]
+    }
     
     # Get directory structure
     # AgMIP.output/<modelname>/phase3b/<climate_forcing>/<climate_scenario>/<crop>
@@ -202,21 +213,22 @@ test.filename <- function(file_path, model.name, ignore){
       warnings <- warnings + 1
     }
     
-    # Check that bias adjustment string in the filename is correct
-    if (is.na(bit_bc)) {
-      bias.f <- "  => ERROR: Failed to parse <bias_adjustment> from filename\n"
-      errors <- errors + 1
-    }
-    else if(bit_bc != "w5e5"){
-      if (tolower(bit_bc) != "w5e5") {
-        bias.f <- "  => WARNING: <bias_adjustment> in filename should be all lowercase\n"
-        warnings <- warnings + 1
-      } else {
-        bias.f <- paste("  => ERROR: bias_adjustment string in filename is", bit_bc, "not 'w5e5'\n")
+    # Check that bias adjustment string in the filename is correct (no applicable in phase3a_attrici)
+    if (phase != "phase3a_attrici") {
+      if (is.na(bit_bc)) {
+        bias.f <- "  => ERROR: Failed to parse <bias_adjustment> from filename\n"
         errors <- errors + 1
       }
+      else if(bit_bc != "w5e5"){
+        if (tolower(bit_bc) == "w5e5") {
+          bias.f <- "  => WARNING: <bias_adjustment> in filename should be all lowercase\n"
+          warnings <- warnings + 1
+        } else {
+          bias.f <- paste("  => ERROR: bias_adjustment string in filename is", bit_bc, "not 'w5e5'\n")
+          errors <- errors + 1
+        }
+      }
     }
-    
     # Check that SSP/RCP scenario is valid
     if (is.na(bit_scen)) {
       scen.f <- "  => ERROR: Failed to parse <climate_scenario> from filename\n"
@@ -320,8 +332,14 @@ test.filename <- function(file_path, model.name, ignore){
           errors <- errors + 1
         }
         else {
-          startyear <- bits[10]
-          endyear <- bits[11]
+          if (phase != "phase3a_attrici") {
+            startyear <- bits[10]
+            endyear <- bits[11]
+          }
+          else {
+            startyear <- bits[9]
+            endyear <- bits[10]
+          }
           if (is.na(startyear) | is.na(endyear)) {
             years.f <- "  => ERROR: Can't check time span: Failed to parse years from filename\n"
             errors <- errors + 1
@@ -334,6 +352,9 @@ test.filename <- function(file_path, model.name, ignore){
             }
             else if (bit_scen %in% c("ssp126", "ssp585", "ssp370")) {
               target_startyear <- 2015
+            }
+            else if (bit_scen %in% c("obsclim", "counterclim")) {
+              target_startyear <- 1901
             } else {
               target_startyear <- NA
             }
@@ -344,6 +365,9 @@ test.filename <- function(file_path, model.name, ignore){
             }
             else if (bit_scen %in% c("picontrol", "ssp126", "ssp585", "ssp370")) {
               target_endyear <- 2100
+            }
+            else if (bit_scen %in% c("obsclim", "counterclim")) {
+              target_endyear <- 2019
             } else {
               target_endyear <- NA
             }
@@ -356,12 +380,12 @@ test.filename <- function(file_path, model.name, ignore){
             }
             else {
               if (startyear != target_startyear){
-                years.f <- paste0("  => ERROR: startyear ", startyear, " not compatible with RCP/SSP scenario ", bit_scen,
+                years.f <- paste0("  => ERROR: startyear ", startyear, " not compatible with scenario ", bit_scen,
                                   " (should be ", target_startyear, ")\n")
                 errors <- errors + 1
               }
               if (endyear != target_endyear){
-                years.f <- paste0(years.f, "  => ERROR: endyear ", endyear, " not compatible with RCP/SSP scenario ", bit_scen,
+                years.f <- paste0(years.f, "  => ERROR: endyear ", endyear, " not compatible with scenario ", bit_scen,
                                   " (should be ", target_endyear, ")\n")
                 errors <- errors + 1
               }
@@ -397,7 +421,7 @@ test.file <- function(fn, landseamask){
   bits <- unlist(strsplit(fn,"[.]"))
   # split first part of file name string into elements
   bits <- unlist(strsplit(bits[1],"_"))
-  bits2 <- unlist(strsplit(bits[7],"-"))
+  bits2 <- unlist(strsplit(bits[ if (phase == "phase3a_attrici") 6 else 7],"-"))
   index <- which(vars==bits2[1])
   if(length(index)>0){
     nc <- nc_open(fn)
@@ -581,7 +605,7 @@ test.file <- function(fn, landseamask){
 }
 
 
-setup_reports <- function(report_dir, report_dir_web, save2file, thisdate, model.name) {
+setup_reports <- function(report_dir, report_dir_web, save2file, thisdate, model.name, phase) {
   
   # If report_dir not specified, set it to working_dir
   if (report_dir == "") {
@@ -591,19 +615,19 @@ setup_reports <- function(report_dir, report_dir_web, save2file, thisdate, model
   # delete old reports
   unlink(paste0(report_dir,model.name,"*"))
   reportnames <- list(
-    "summary" = paste0(report_dir,model.name,"_summary.txt"),
-    "fn" = paste0(report_dir,model.name,"_filename_issues.txt"), 
-    "sim" = paste0(report_dir,model.name,"_simulations_missing.txt"), 
-    "data" = paste0(report_dir,model.name,"_data_issues.txt"))
+    "summary" = paste0(report_dir,model.name,"_",phase,"_summary.txt"),
+    "fn" = paste0(report_dir,model.name,"_",phase,"_filename_issues.txt"), 
+    "sim" = paste0(report_dir,model.name,"_",phase,"_simulations_missing.txt"), 
+    "data" = paste0(report_dir,model.name,"_",phase,"_data_issues.txt"))
   
   if (save2file) sink(file=reportnames$summary,append=F)
 
   cat("\n\n********  GGCMI Phase 3 file check summary report ********\n\n")
   cat("there are more detailed reports for specific aspects:\n")
   if (report_dir_web != "") {
-    cat(paste0(report_dir_web,model.name,"_filename_issues.txt"),"\n")
-    cat(paste0(report_dir_web,model.name,"_simulations_missing.txt"),"\n")
-    cat(paste0(report_dir_web,model.name,"_data_issues.txt"),"\n")
+    cat(paste0(report_dir_web,model.name,"_",phase,"_filename_issues.txt"),"\n")
+    cat(paste0(report_dir_web,model.name,"_",phase,"_simulations_missing.txt"),"\n")
+    cat(paste0(report_dir_web,model.name,"_",phase,"_data_issues.txt"),"\n")
   } else {
     cat(reportnames$fn,"\n")
     cat(reportnames$sim,"\n")
@@ -736,7 +760,8 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sim.r
                                crops[crop], "/", 
                                tolower(model.name),"_",
                                tolower(gcms[gcm]),
-                               "_w5e5_",
+                               if (phase != "phase3a_attrici") "_w5e5",
+                               "_",
                                rcsps[rcsp],"_",
                                socs[soc],"_",
                                sens[sen],"_",
@@ -751,7 +776,8 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sim.r
                                crops[crop], "/", 
                                tolower(model.name),"_",
                                tolower(gcms[gcm]),
-                               "_w5e5_",
+                               if (phase != "phase3a_attrici") "_w5e5",
+                               "_",
                                rcsps[rcsp],"_",
                                socs[soc],"_",
                                sens[sen],"_",
@@ -759,8 +785,9 @@ do_test.file_set <- function(crops, irrigs, rcsps, socs, sens, gcms, vars, sim.r
                                crops[crop],"-",
                                irrigs[irrig],
                                "_global_annual_",
-                               ifelse(rcsp<3,1850,2015), "_",
-                               ifelse(rcsp==2,2014,2100),".nc")
+                               ifelse(phase == "phase3a_attrici", 1901, ifelse(rcsp<3,1850,2015)), "_",
+                               ifelse(phase == "phase3a_attrici", 2019, ifelse(rcsp==2,2014,2100)),".nc")
+                               
                   does_exist <- file.exists(fn)
                 }
                 if(does_exist){
